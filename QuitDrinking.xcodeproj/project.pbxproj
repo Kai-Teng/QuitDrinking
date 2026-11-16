@@ -1,0 +1,589 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		85DA87215A88D96F6A3603F7 /* QuitDrinkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB982A8B6D07264DC07D865 /* QuitDrinkingApp.swift */; };
+		BE0EC4F8B5C74EB5557598D1 /* TactileButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0555C1DAC78BCC2F0B6D4D /* TactileButtonStyles.swift */; };
+		628B936ABB879F41994406A8 /* ThemeTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9013C0B5DB5345DB592B5067 /* ThemeTokens.swift */; };
+		48CCE945713E430B786807CF /* CombatEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92ADAFFBA6ADC1D8EE0950C /* CombatEngine.swift */; };
+		730B1EA0F3B0A368C68F663C /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E325E216027C04ACDCB9B4 /* Models.swift */; };
+		6D5DBB72BC05557C777A2BC9 /* MonsterCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC197FFABD025622E9B969E /* MonsterCatalog.swift */; };
+		AA0AEF428E3C3B132A8FAA6D /* SharedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */; };
+		A0E25E4E518122260038FC51 /* BattleArenaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */; };
+		24FFE63ED2981580044B2085 /* HonestShieldSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */; };
+		6E05B08A67CE83EEAF9E2E7B /* LevelUpCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */; };
+		303BC390260DB3F1AA15CCB2 /* MonsterAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */; };
+		F9643E1DD8D6D8134288F891 /* MAICDemoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA0FAD15923F2A66CA351EB /* MAICDemoSheet.swift */; };
+		83333246C94B2AB76E5CAF9A /* OnboardingSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896656172270462192C9D574 /* OnboardingSheetView.swift */; };
+		C0A2ABEC807C55519E382772 /* InsightsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */; };
+		86EE2D3FFB92180D00C6BCF8 /* MonsterBestiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */; };
+		AC1FE1FA41669ECB659E2176 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70D569871AA24099212C946 /* RootTabView.swift */; };
+		F64BBB186D70000218C48BCE /* MonsterStatusWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F2AD07DD850ACDF0EE1E7E /* MonsterStatusWidget.swift */; };
+		59A79F63C351FBBF8AF66F54 /* QuitDrinkingWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B47DB29BA429D6E9D691F0 /* QuitDrinkingWidgetBundle.swift */; };
+		D89A1A1854A70022DDE5CB20 /* ThemeTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9013C0B5DB5345DB592B5067 /* ThemeTokens.swift */; };
+		5214204E6D8FB236DF5FB67F /* SharedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */; };
+		1FA1D0A6724E60CACD033B5F /* CombatEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8536CC4176CF09944BD9D9E /* CombatEngineTests.swift */; };
+		D635CCDC003EC8FCE140C233 /* SharedSnapshotStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51337226B4FAD2B290EF58F1 /* SharedSnapshotStoreTests.swift */; };
+		594382344EDAFFA9A4FB0F58 /* QuitDrinkingWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E4E12A57622824EF09A3BD10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A3D1FE180DF90AB8D55E0DA3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 306C4981B96AABC1793EC17B;
+			remoteInfo = QuitDrinkingWidget;
+		};
+		F1981E74AB3786725C5F3BF1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A3D1FE180DF90AB8D55E0DA3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2D7B83E258E18D4751BD55CC;
+			remoteInfo = QuitDrinking;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9C35BF359CF1D5ACF38A674C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				594382344EDAFFA9A4FB0F58 /* QuitDrinkingWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		FDB982A8B6D07264DC07D865 /* QuitDrinkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuitDrinkingApp.swift"; sourceTree = "<group>"; };
+		1C0555C1DAC78BCC2F0B6D4D /* TactileButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TactileButtonStyles.swift"; sourceTree = "<group>"; };
+		9013C0B5DB5345DB592B5067 /* ThemeTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThemeTokens.swift"; sourceTree = "<group>"; };
+		C92ADAFFBA6ADC1D8EE0950C /* CombatEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CombatEngine.swift"; sourceTree = "<group>"; };
+		C2E325E216027C04ACDCB9B4 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models.swift"; sourceTree = "<group>"; };
+		CAC197FFABD025622E9B969E /* MonsterCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterCatalog.swift"; sourceTree = "<group>"; };
+		AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedSnapshotStore.swift"; sourceTree = "<group>"; };
+		B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BattleArenaView.swift"; sourceTree = "<group>"; };
+		35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonestShieldSheet.swift"; sourceTree = "<group>"; };
+		52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LevelUpCelebrationView.swift"; sourceTree = "<group>"; };
+		054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterAvatarView.swift"; sourceTree = "<group>"; };
+		EAA0FAD15923F2A66CA351EB /* MAICDemoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MAICDemoSheet.swift"; sourceTree = "<group>"; };
+		896656172270462192C9D574 /* OnboardingSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSheetView.swift"; sourceTree = "<group>"; };
+		5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InsightsDashboardView.swift"; sourceTree = "<group>"; };
+		5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterBestiaryView.swift"; sourceTree = "<group>"; };
+		C70D569871AA24099212C946 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootTabView.swift"; sourceTree = "<group>"; };
+		B8536CC4176CF09944BD9D9E /* CombatEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CombatEngineTests.swift"; sourceTree = "<group>"; };
+		51337226B4FAD2B290EF58F1 /* SharedSnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedSnapshotStoreTests.swift"; sourceTree = "<group>"; };
+		E7F2AD07DD850ACDF0EE1E7E /* MonsterStatusWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterStatusWidget.swift"; sourceTree = "<group>"; };
+		45B47DB29BA429D6E9D691F0 /* QuitDrinkingWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuitDrinkingWidgetBundle.swift"; sourceTree = "<group>"; };
+		7C9697826E81163A33789F32 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		23A7312AB253F27391B5E99A /* QuitDrinking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuitDrinking.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuitDrinkingWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuitDrinkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		104DA5C0E2B14F3544A2C51B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1CDFFF88DF4C15EA39356138 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		623D6CB81D67736900D7818C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ADCF10F76EBF2A74473E9DC4 = {
+			isa = PBXGroup;
+			children = (
+				0C9552C6AA2801665DFCD686 /* QuitDrinking */,
+				91AB83CAA4337598AE92B004 /* QuitDrinkingTests */,
+				F3FE99DC59D925F02035E303 /* QuitDrinkingWidget */,
+				5151B46607EBC8890D8DFCC2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0C9552C6AA2801665DFCD686 /* QuitDrinking */ = {
+			isa = PBXGroup;
+			children = (
+				9FC7C2AE6D73582FF25A62D2 /* App */,
+				70A51004F946C9A830D9ADF7 /* DesignSystem */,
+				D9A26BF997F2BE53D9A6328A /* Domain */,
+				0F85494546C59B20F1AF6B21 /* Features */,
+				C70D569871AA24099212C946 /* RootTabView.swift */,
+			);
+			path = QuitDrinking;
+			sourceTree = "<group>";
+		};
+		91AB83CAA4337598AE92B004 /* QuitDrinkingTests */ = {
+			isa = PBXGroup;
+			children = (
+				B8536CC4176CF09944BD9D9E /* CombatEngineTests.swift */,
+				51337226B4FAD2B290EF58F1 /* SharedSnapshotStoreTests.swift */,
+			);
+			path = QuitDrinkingTests;
+			sourceTree = "<group>";
+		};
+		F3FE99DC59D925F02035E303 /* QuitDrinkingWidget */ = {
+			isa = PBXGroup;
+			children = (
+				7C9697826E81163A33789F32 /* Info.plist */,
+				E7F2AD07DD850ACDF0EE1E7E /* MonsterStatusWidget.swift */,
+				45B47DB29BA429D6E9D691F0 /* QuitDrinkingWidgetBundle.swift */,
+			);
+			path = QuitDrinkingWidget;
+			sourceTree = "<group>";
+		};
+		9FC7C2AE6D73582FF25A62D2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				FDB982A8B6D07264DC07D865 /* QuitDrinkingApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		70A51004F946C9A830D9ADF7 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				1C0555C1DAC78BCC2F0B6D4D /* TactileButtonStyles.swift */,
+				9013C0B5DB5345DB592B5067 /* ThemeTokens.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		D9A26BF997F2BE53D9A6328A /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				C92ADAFFBA6ADC1D8EE0950C /* CombatEngine.swift */,
+				C2E325E216027C04ACDCB9B4 /* Models.swift */,
+				CAC197FFABD025622E9B969E /* MonsterCatalog.swift */,
+				AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		0F85494546C59B20F1AF6B21 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				BA54FB0684194D3CCC7F44AD /* Battle */,
+				36FD75A175F13829BF87B9F4 /* Demo */,
+				F9A88AB6AA780B4938A94E5F /* Insights */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		BA54FB0684194D3CCC7F44AD /* Battle */ = {
+			isa = PBXGroup;
+			children = (
+				B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */,
+				35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */,
+				52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */,
+				054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */,
+			);
+			path = Battle;
+			sourceTree = "<group>";
+		};
+		36FD75A175F13829BF87B9F4 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				EAA0FAD15923F2A66CA351EB /* MAICDemoSheet.swift */,
+				896656172270462192C9D574 /* OnboardingSheetView.swift */,
+			);
+			path = Demo;
+			sourceTree = "<group>";
+		};
+		F9A88AB6AA780B4938A94E5F /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */,
+				5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */,
+			);
+			path = Insights;
+			sourceTree = "<group>";
+		};
+		5151B46607EBC8890D8DFCC2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				23A7312AB253F27391B5E99A /* QuitDrinking.app */,
+				4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */,
+				94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2D7B83E258E18D4751BD55CC /* QuitDrinking */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 010927E8A25FE9141531302A /* Build configuration list for PBXNativeTarget "QuitDrinking" */;
+			buildPhases = (
+				582BFFE9E7668C7572E592CB /* Sources */,
+				104DA5C0E2B14F3544A2C51B /* Frameworks */,
+				05EF6D1989E6BB01AFFE830B /* Resources */,
+				9C35BF359CF1D5ACF38A674C /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB1A462FDEA6F3D7D0CA7B27 /* PBXTargetDependency */,
+			);
+			name = QuitDrinking;
+			productName = QuitDrinking;
+			productReference = 23A7312AB253F27391B5E99A /* QuitDrinking.app */;
+			productType = "com.apple.product-type.application";
+		};
+		306C4981B96AABC1793EC17B /* QuitDrinkingWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 08C7595212C55B69BDE6D680 /* Build configuration list for PBXNativeTarget "QuitDrinkingWidget" */;
+			buildPhases = (
+				97E1B2B04D6578D0B09727F9 /* Sources */,
+				1CDFFF88DF4C15EA39356138 /* Frameworks */,
+				F012AF38C27055BCFD87A59B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuitDrinkingWidget;
+			productName = QuitDrinkingWidget;
+			productReference = 4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		E2D4E38B958CCAF4218AC4C1 /* QuitDrinkingTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 923172CFA84E21D0715C2446 /* Build configuration list for PBXNativeTarget "QuitDrinkingTests" */;
+			buildPhases = (
+				096F93B8733EEC8517BF3AB5 /* Sources */,
+				623D6CB81D67736900D7818C /* Frameworks */,
+				3756BC49E9BA643EBE214D11 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8C6CC8DB85E0E4FCFD7EC63E /* PBXTargetDependency */,
+			);
+			name = QuitDrinkingTests;
+			productName = QuitDrinkingTests;
+			productReference = 94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A3D1FE180DF90AB8D55E0DA3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2720;
+				LastUpgradeCheck = 2720;
+			};
+			buildConfigurationList = 3D29D9F3A882C4202964FB56 /* Build configuration list for PBXProject "QuitDrinking" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hant";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hant",
+			);
+			mainGroup = ADCF10F76EBF2A74473E9DC4;
+			productRefGroup = 5151B46607EBC8890D8DFCC2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2D7B83E258E18D4751BD55CC /* QuitDrinking */,
+				306C4981B96AABC1793EC17B /* QuitDrinkingWidget */,
+				E2D4E38B958CCAF4218AC4C1 /* QuitDrinkingTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		05EF6D1989E6BB01AFFE830B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F012AF38C27055BCFD87A59B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3756BC49E9BA643EBE214D11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		582BFFE9E7668C7572E592CB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				85DA87215A88D96F6A3603F7,
+				BE0EC4F8B5C74EB5557598D1,
+				628B936ABB879F41994406A8,
+				48CCE945713E430B786807CF,
+				730B1EA0F3B0A368C68F663C,
+				6D5DBB72BC05557C777A2BC9,
+				AA0AEF428E3C3B132A8FAA6D,
+				A0E25E4E518122260038FC51,
+				24FFE63ED2981580044B2085,
+				6E05B08A67CE83EEAF9E2E7B,
+				303BC390260DB3F1AA15CCB2,
+				F9643E1DD8D6D8134288F891,
+				83333246C94B2AB76E5CAF9A,
+				C0A2ABEC807C55519E382772,
+				86EE2D3FFB92180D00C6BCF8,
+				AC1FE1FA41669ECB659E2176,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		97E1B2B04D6578D0B09727F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F64BBB186D70000218C48BCE,
+				59A79F63C351FBBF8AF66F54,
+				D89A1A1854A70022DDE5CB20,
+				5214204E6D8FB236DF5FB67F,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		096F93B8733EEC8517BF3AB5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FA1D0A6724E60CACD033B5F,
+				D635CCDC003EC8FCE140C233,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AB1A462FDEA6F3D7D0CA7B27 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 306C4981B96AABC1793EC17B /* QuitDrinkingWidget */;
+			targetProxy = E4E12A57622824EF09A3BD10 /* PBXContainerItemProxy */;
+		};
+		8C6CC8DB85E0E4FCFD7EC63E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2D7B83E258E18D4751BD55CC /* QuitDrinking */;
+			targetProxy = F1981E74AB3786725C5F3BF1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		855D4B0C75ECD556474FD8F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4E74312DBBD620AE1CB5D771 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.2;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F16BA4DBD988EAFBE3FA08E8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "破曉戰記";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		ABE0824D4898D09F801D7C32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "破曉戰記";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		AE18AA9493118662DBD5AD79 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuitDrinkingWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "破曉戰記小工具";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		52426D463C452173FE6EC1DE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuitDrinkingWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "破曉戰記小工具";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		0CC3A9B6924CC632EF4A03AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuestTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QuitDrinking.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QuitDrinking";
+			};
+			name = Debug;
+		};
+		82795996EB8F1DA965CB7482 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuestTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QuitDrinking.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QuitDrinking";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3D29D9F3A882C4202964FB56 /* Build configuration list for PBXProject "QuitDrinking" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				855D4B0C75ECD556474FD8F5 /* Debug */,
+				4E74312DBBD620AE1CB5D771 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		010927E8A25FE9141531302A /* Build configuration list for PBXNativeTarget "QuitDrinking" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F16BA4DBD988EAFBE3FA08E8 /* Debug */,
+				ABE0824D4898D09F801D7C32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		08C7595212C55B69BDE6D680 /* Build configuration list for PBXNativeTarget "QuitDrinkingWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE18AA9493118662DBD5AD79 /* Debug */,
+				52426D463C452173FE6EC1DE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		923172CFA84E21D0715C2446 /* Build configuration list for PBXNativeTarget "QuitDrinkingTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0CC3A9B6924CC632EF4A03AA /* Debug */,
+				82795996EB8F1DA965CB7482 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A3D1FE180DF90AB8D55E0DA3 /* Project object */;
+}
