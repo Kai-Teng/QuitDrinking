@@ -25,8 +25,19 @@ struct MonsterAvatarView: View {
         ZStack {
             // 怪獸屬性光環
             Circle()
-                .fill(accentColor.opacity(isCriticalHP ? 0.14 : 0.22))
-                .frame(width: 224, height: 224)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            accentColor.opacity(isCriticalHP ? 0.24 : 0.34),
+                            accentColor.opacity(0.08),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 18,
+                        endRadius: 118
+                    )
+                )
+                .frame(width: 236, height: 236)
                 .scaleEffect(idleBreathing && !skipMotion ? 1.05 : 0.96)
                 .animation(
                     skipMotion ? nil : .easeInOut(duration: isCriticalHP ? 1.0 : 2.1).repeatForever(autoreverses: true),
@@ -36,9 +47,9 @@ struct MonsterAvatarView: View {
 
             // 地台陰影
             Ellipse()
-                .fill(Color.black.opacity(0.42))
-                .frame(width: 150, height: 26)
-                .offset(y: 88)
+                .fill(Color.black.opacity(0.45))
+                .frame(width: 148, height: 22)
+                .offset(y: 86)
                 .accessibilityHidden(true)
 
             // 主怪獸圖像（團隊美術替換點：若之後加入 Imageset 如 "monster_lv\(spec.level)" 可於此優先顯示 Image）
@@ -137,22 +148,48 @@ struct MonsterAvatarView: View {
     private var slimeCreature: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 68, style: .continuous)
-                .fill(accentColor.opacity(0.88))
-                .frame(width: 146, height: 132)
+                .fill(accentColor.opacity(0.90))
+                .frame(width: 148, height: 130)
                 .overlay(
                     RoundedRectangle(cornerRadius: 68, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.28), lineWidth: 2)
+                        .strokeBorder(Color.white.opacity(0.30), lineWidth: 2)
                 )
-            // 氣泡高光
+            // 泡沫與氣泡高光
             Circle()
-                .fill(Color.white.opacity(0.35))
+                .fill(Color.white.opacity(0.38))
                 .frame(width: 22, height: 22)
-                .offset(x: -36, y: -30)
+                .offset(x: -36, y: -32)
             Circle()
-                .fill(Color.white.opacity(0.22))
-                .frame(width: 12, height: 12)
-                .offset(x: -22, y: -44)
-            monsterEyes(eyeSpacing: 46, angry: isCriticalHP)
+                .fill(Color.white.opacity(0.24))
+                .frame(width: 11, height: 11)
+                .offset(x: -20, y: -46)
+            Circle()
+                .fill(accentColor.opacity(0.55))
+                .frame(width: 14, height: 14)
+                .offset(x: 78, y: -42)
+            Circle()
+                .fill(accentColor.opacity(0.40))
+                .frame(width: 9, height: 9)
+                .offset(x: 64, y: -62)
+
+            VStack(spacing: 10) {
+                monsterEyes(eyeSpacing: 44, angry: isCriticalHP)
+                // 微醺腮紅與波形嘴
+                HStack(spacing: 54) {
+                    Capsule()
+                        .fill(ThemeTokens.coralAlert.opacity(0.50))
+                        .frame(width: 18, height: 7)
+                    Capsule()
+                        .fill(ThemeTokens.coralAlert.opacity(0.50))
+                        .frame(width: 18, height: 7)
+                }
+                .offset(y: -4)
+                Image(systemName: "waveform.path")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(ThemeTokens.canvasBackground.opacity(0.65))
+                    .offset(y: -8)
+            }
+            .offset(y: 6)
         }
     }
 

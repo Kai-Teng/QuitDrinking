@@ -128,6 +128,7 @@ struct HonestShieldSheet: View {
                         .font(.title2)
                         .foregroundStyle(units > 1 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel("減少一杯")
                 .disabled(units <= 1)
 
@@ -152,6 +153,7 @@ struct HonestShieldSheet: View {
                         .font(.title2)
                         .foregroundStyle(units < 6 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel("增加一杯")
                 .disabled(units >= 6)
             }

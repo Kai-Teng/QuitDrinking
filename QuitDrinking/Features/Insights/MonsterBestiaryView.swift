@@ -121,6 +121,7 @@ struct MonsterBestiaryView: View {
                             .padding(.vertical, 6)
                             .background(Capsule().fill(accent))
                     }
+                    .buttonStyle(.plain)
                 } else if isDefeated {
                     Label("已擊敗", systemImage: "checkmark.seal.fill")
                         .font(.caption.weight(.bold))

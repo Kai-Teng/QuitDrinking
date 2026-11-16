@@ -139,6 +139,7 @@ struct BattleArenaView: View {
                         .overlay(Capsule().strokeBorder(ThemeTokens.cardStroke, lineWidth: 1))
                 )
             }
+            .buttonStyle(.plain)
             .accessibilityLabel("切換目標模式")
             .accessibilityHint("點擊切換完全斷酒或減量控酒模式")
 
@@ -154,6 +155,7 @@ struct BattleArenaView: View {
                                 .overlay(Circle().strokeBorder(ThemeTokens.cardStroke, lineWidth: 1))
                         )
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel("開啟 MAIC Demo 控制台")
             }
         }
