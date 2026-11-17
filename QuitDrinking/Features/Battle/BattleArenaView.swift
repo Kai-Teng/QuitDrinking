@@ -15,6 +15,9 @@ struct BattleArenaView: View {
     @State private var showDrinkSheet = false
     @State private var hitTrigger = 0
     @State private var shieldTrigger = 0
+    @State private var lastDamageAmount = 100
+    @State private var lastHealAmount = 45
+    @State private var lastHealWasWithinBudget = false
     @State private var feedbackNotice: BattleFloatingNotice?
     @State private var celebrationContext: LevelUpContext?
 
@@ -229,7 +232,10 @@ struct BattleArenaView: View {
                 spec: activeMonster,
                 hpRatio: hpRatio,
                 hitTrigger: hitTrigger,
-                shieldTrigger: shieldTrigger
+                shieldTrigger: shieldTrigger,
+                lastDamageAmount: lastDamageAmount,
+                lastHealAmount: lastHealAmount,
+                lastHealWasWithinBudget: lastHealWasWithinBudget
             )
 
             Spacer(minLength: 0)
@@ -371,6 +377,7 @@ struct BattleArenaView: View {
         case .applied(let summary):
             try? modelContext.save()
             WidgetCenter.shared.reloadAllTimelines()
+            lastDamageAmount = abs(summary.hpDelta)
             hitTrigger += 1
             showNotice("暴擊 \(summary.hpDelta) HP！", color: ThemeTokens.mintVitality)
             if let defeated = summary.defeatedMonster {
@@ -406,6 +413,8 @@ struct BattleArenaView: View {
         case .applied(let summary):
             try? modelContext.save()
             WidgetCenter.shared.reloadAllTimelines()
+            lastHealAmount = summary.hpDelta
+            lastHealWasWithinBudget = (summary.outcome == .withinBudgetDrink)
             shieldTrigger += 1
             if summary.outcome == .honestShieldRelapse {
                 showNotice("誠實護盾展開！怪獸僅回 +\(summary.hpDelta) HP", color: ThemeTokens.amberShield)

@@ -18,7 +18,7 @@ Keep all 4 team members' edits consistent with the MAIC pitch, anti-churn psycho
 
 ## 2. Tech Stack & Visual System
 
-- **Pure Swift + SwiftUI (iOS 27.2 / Swift 6)**: Do not introduce UIKit/AppKit view controllers or third-party UI dependencies. Use modern SwiftUI APIs (`Tab`, `sensoryFeedback`, `keyframeAnimator`, `SwiftData`, `Charts`, `WidgetKit`).
+- **Pure Swift + SwiftUI + SpriteKit (iOS 27.2 / Swift 6)**: Do not introduce UIKit/AppKit view controllers or third-party UI dependencies. Use modern SwiftUI APIs (`Tab`, `SpriteView`, `sensoryFeedback`, `SwiftData`, `Charts`, `WidgetKit`) and SpriteKit (`SKScene`, `SKShapeNode`, `SKEmitterNode`, `SKAction`) for the 2D battle stage.
 - **Twilight Tavern to Crisp Dawn Palette**: Always pull colors from `ThemeTokens` (`#0D131F` canvas, `#162032` card surface, `#F6F3EC` primary ink, `#2DD4BF` mint attacks/savings, `#F59E0B` amber Honest Shield/crowns, `#F43F5E` coral alerts, `#38BDF8` sky moderation). Never hardcode raw hex values in feature views.
 - **Typography & Accessibility**: Render dynamic HP, currency, calorie, and day numbers with `ThemeTokens.roundedNumericFont` + `.monospacedDigit()` to prevent jitter during live Keynote screen recordings. Provide `accessibilityLabel`/`accessibilityValue` on custom gauges and icon buttons, and gate non-essential bounce/shake animations with `@Environment(\.accessibilityReduceMotion)`.
 
@@ -29,7 +29,7 @@ Respect these directory boundaries when assigning or editing work across the 4 t
 | Teammate Role | Owned Paths | Responsibility |
 | :--- | :--- | :--- |
 | Member 1 (Core & Data) | `QuitDrinking/Domain/` | `Models.swift`, `MonsterCatalog.swift`, `CombatEngine.swift`, `SharedSnapshotStore.swift` |
-| Member 2 (Battle UI) | `QuitDrinking/Features/Battle/` | `BattleArenaView.swift`, `MonsterAvatarView.swift`, `HonestShieldSheet.swift`, `LevelUpCelebrationView.swift` |
+| Member 2 (Battle UI) | `QuitDrinking/Features/Battle/` | `BattleArenaView.swift`, `MonsterAvatarView.swift`, `BattleStageScene.swift`, `HonestShieldSheet.swift`, `LevelUpCelebrationView.swift` |
 | Member 3 (Insights & Bestiary) | `QuitDrinking/Features/Insights/` | `InsightsDashboardView.swift`, `MonsterBestiaryView.swift` |
 | Member 4 (MAIC Demo & System) | `QuitDrinking/Features/Demo/`, `QuitDrinkingWidget/` | `MAICDemoSheet.swift`, `OnboardingSheetView.swift`, `MonsterStatusWidget.swift` |
 

@@ -15,6 +15,7 @@
 		6D5DBB72BC05557C777A2BC9 /* MonsterCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC197FFABD025622E9B969E /* MonsterCatalog.swift */; };
 		AA0AEF428E3C3B132A8FAA6D /* SharedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */; };
 		A0E25E4E518122260038FC51 /* BattleArenaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */; };
+		59B5BF7CE44766D558D3B9B3 /* BattleStageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A951EC6C2B62D5133A2188D /* BattleStageScene.swift */; };
 		24FFE63ED2981580044B2085 /* HonestShieldSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */; };
 		6E05B08A67CE83EEAF9E2E7B /* LevelUpCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */; };
 		303BC390260DB3F1AA15CCB2 /* MonsterAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */; };
@@ -72,6 +73,7 @@
 		CAC197FFABD025622E9B969E /* MonsterCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterCatalog.swift"; sourceTree = "<group>"; };
 		AE55288782E995CAC745E946 /* SharedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedSnapshotStore.swift"; sourceTree = "<group>"; };
 		B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BattleArenaView.swift"; sourceTree = "<group>"; };
+		4A951EC6C2B62D5133A2188D /* BattleStageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BattleStageScene.swift"; sourceTree = "<group>"; };
 		35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonestShieldSheet.swift"; sourceTree = "<group>"; };
 		52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LevelUpCelebrationView.swift"; sourceTree = "<group>"; };
 		054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterAvatarView.swift"; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				B993579D7C5FBD02184AE9D3 /* BattleArenaView.swift */,
+				4A951EC6C2B62D5133A2188D /* BattleStageScene.swift */,
 				35711BB1C81B9AF4D43C1F4E /* HonestShieldSheet.swift */,
 				52A6E59D8A3FB931EC8E3A86 /* LevelUpCelebrationView.swift */,
 				054EE06020D5EB7A1D3BC09D /* MonsterAvatarView.swift */,
@@ -358,6 +361,7 @@
 				6D5DBB72BC05557C777A2BC9,
 				AA0AEF428E3C3B132A8FAA6D,
 				A0E25E4E518122260038FC51,
+				59B5BF7CE44766D558D3B9B3,
 				24FFE63ED2981580044B2085,
 				6E05B08A67CE83EEAF9E2E7B,
 				303BC390260DB3F1AA15CCB2,
