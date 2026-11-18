@@ -22,7 +22,6 @@
 		F9643E1DD8D6D8134288F891 /* MAICDemoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA0FAD15923F2A66CA351EB /* MAICDemoSheet.swift */; };
 		83333246C94B2AB76E5CAF9A /* OnboardingSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896656172270462192C9D574 /* OnboardingSheetView.swift */; };
 		C0A2ABEC807C55519E382772 /* InsightsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */; };
-		86EE2D3FFB92180D00C6BCF8 /* MonsterBestiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */; };
 		AC1FE1FA41669ECB659E2176 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70D569871AA24099212C946 /* RootTabView.swift */; };
 		F64BBB186D70000218C48BCE /* MonsterStatusWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F2AD07DD850ACDF0EE1E7E /* MonsterStatusWidget.swift */; };
 		59A79F63C351FBBF8AF66F54 /* QuitDrinkingWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B47DB29BA429D6E9D691F0 /* QuitDrinkingWidgetBundle.swift */; };
@@ -31,6 +30,12 @@
 		1FA1D0A6724E60CACD033B5F /* CombatEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8536CC4176CF09944BD9D9E /* CombatEngineTests.swift */; };
 		D635CCDC003EC8FCE140C233 /* SharedSnapshotStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51337226B4FAD2B290EF58F1 /* SharedSnapshotStoreTests.swift */; };
 		594382344EDAFFA9A4FB0F58 /* QuitDrinkingWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D772B2094AB90C348EDA85D1 /* CampaignDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5391964D21E162F357583A0 /* CampaignDetailView.swift */; };
+		F683E65CD5939902197DA2A8 /* CampaignMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7DE3FDC1E6D3E9DF3D7F8F /* CampaignMapView.swift */; };
+		598DB23AB5F3F4C27D7F6387 /* CampaignStop.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF1A54E2EA35C1F9E41DE1D /* CampaignStop.swift */; };
+		1A7AEF691D72A423C968ED92 /* CampaignTrail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1760A60EB55400A3D8899BAE /* CampaignTrail.swift */; };
+		8F4FD9C301D4E3BAD0E6750C /* CampaignArt.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82DB8587FA3C52A183441D58 /* CampaignArt.xcassets */; };
+		9F20A8EAA8B4E390C0064F87 /* CampaignMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76520E3FA1F58A5BC3DE2429 /* CampaignMapTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +70,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DBE1240411414848AF514423 /* WidgetSharing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetSharing.entitlements; sourceTree = "<group>"; };
 		FDB982A8B6D07264DC07D865 /* QuitDrinkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuitDrinkingApp.swift"; sourceTree = "<group>"; };
 		1C0555C1DAC78BCC2F0B6D4D /* TactileButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TactileButtonStyles.swift"; sourceTree = "<group>"; };
 		9013C0B5DB5345DB592B5067 /* ThemeTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThemeTokens.swift"; sourceTree = "<group>"; };
@@ -80,7 +86,6 @@
 		EAA0FAD15923F2A66CA351EB /* MAICDemoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MAICDemoSheet.swift"; sourceTree = "<group>"; };
 		896656172270462192C9D574 /* OnboardingSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSheetView.swift"; sourceTree = "<group>"; };
 		5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InsightsDashboardView.swift"; sourceTree = "<group>"; };
-		5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonsterBestiaryView.swift"; sourceTree = "<group>"; };
 		C70D569871AA24099212C946 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootTabView.swift"; sourceTree = "<group>"; };
 		B8536CC4176CF09944BD9D9E /* CombatEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CombatEngineTests.swift"; sourceTree = "<group>"; };
 		51337226B4FAD2B290EF58F1 /* SharedSnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedSnapshotStoreTests.swift"; sourceTree = "<group>"; };
@@ -90,6 +95,13 @@
 		23A7312AB253F27391B5E99A /* QuitDrinking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuitDrinking.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuitDrinkingWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuitDrinkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C5391964D21E162F357583A0 /* CampaignDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDetailView.swift; sourceTree = "<group>"; };
+		DA7DE3FDC1E6D3E9DF3D7F8F /* CampaignMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignMapView.swift; sourceTree = "<group>"; };
+		BCF1A54E2EA35C1F9E41DE1D /* CampaignStop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignStop.swift; sourceTree = "<group>"; };
+		1760A60EB55400A3D8899BAE /* CampaignTrail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignTrail.swift; sourceTree = "<group>"; };
+		82DB8587FA3C52A183441D58 /* CampaignArt.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = CampaignArt.xcassets; sourceTree = "<group>"; };
+		76520E3FA1F58A5BC3DE2429 /* CampaignMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignMapTests.swift; sourceTree = "<group>"; };
+		626528773BECE8EFB0C41F35 /* QuitDrinkingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = QuitDrinkingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +132,7 @@
 		ADCF10F76EBF2A74473E9DC4 = {
 			isa = PBXGroup;
 			children = (
+				9FC8C68AB43D9CD0CB33BBA7 /* QuitDrinkingUITests */,
 				0C9552C6AA2801665DFCD686 /* QuitDrinking */,
 				91AB83CAA4337598AE92B004 /* QuitDrinkingTests */,
 				F3FE99DC59D925F02035E303 /* QuitDrinkingWidget */,
@@ -135,6 +148,7 @@
 				D9A26BF997F2BE53D9A6328A /* Domain */,
 				0F85494546C59B20F1AF6B21 /* Features */,
 				C70D569871AA24099212C946 /* RootTabView.swift */,
+				DBE1240411414848AF514423 /* WidgetSharing.entitlements */,
 			);
 			path = QuitDrinking;
 			sourceTree = "<group>";
@@ -189,6 +203,7 @@
 		0F85494546C59B20F1AF6B21 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				B83F914BF9D6A2BCAFBDD85A /* Campaign */,
 				BA54FB0684194D3CCC7F44AD /* Battle */,
 				36FD75A175F13829BF87B9F4 /* Demo */,
 				F9A88AB6AA780B4938A94E5F /* Insights */,
@@ -221,7 +236,6 @@
 			isa = PBXGroup;
 			children = (
 				5141B6F501173A934EBEF140 /* InsightsDashboardView.swift */,
-				5537AEBAF0BFE56DDAEB63EF /* MonsterBestiaryView.swift */,
 			);
 			path = Insights;
 			sourceTree = "<group>";
@@ -229,11 +243,32 @@
 		5151B46607EBC8890D8DFCC2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				626528773BECE8EFB0C41F35 /* QuitDrinkingUITests.xctest */,
 				23A7312AB253F27391B5E99A /* QuitDrinking.app */,
 				4C86954173FE026D5FD1E200 /* QuitDrinkingWidget.appex */,
 				94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B83F914BF9D6A2BCAFBDD85A /* Campaign */ = {
+			isa = PBXGroup;
+			children = (
+				C5391964D21E162F357583A0 /* CampaignDetailView.swift */,
+				DA7DE3FDC1E6D3E9DF3D7F8F /* CampaignMapView.swift */,
+				BCF1A54E2EA35C1F9E41DE1D /* CampaignStop.swift */,
+				1760A60EB55400A3D8899BAE /* CampaignTrail.swift */,
+				82DB8587FA3C52A183441D58 /* CampaignArt.xcassets */,
+			);
+			path = Campaign;
+			sourceTree = "<group>";
+		};
+		9FC8C68AB43D9CD0CB33BBA7 /* QuitDrinkingUITests */ = {
+			isa = PBXGroup;
+			children = (
+				76520E3FA1F58A5BC3DE2429 /* CampaignMapTests.swift */,
+			);
+			path = QuitDrinkingUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -293,6 +328,17 @@
 			productReference = 94612AC3450FCF69322F7A0D /* QuitDrinkingTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		6B99806D2FB8BE9A245B5C22 /* QuitDrinkingUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0325480B9ABABFB8D40D8D67;
+			buildPhases = (91C7F0271D4CCD4201857DB7 /* Sources */,);
+			buildRules = ();
+			dependencies = (EE9EB1AC52A063BEE732D2D5,);
+			name = QuitDrinkingUITests;
+			productName = QuitDrinkingUITests;
+			productReference = 626528773BECE8EFB0C41F35;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -317,6 +363,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				6B99806D2FB8BE9A245B5C22 /* QuitDrinkingUITests */,
 				2D7B83E258E18D4751BD55CC /* QuitDrinking */,
 				306C4981B96AABC1793EC17B /* QuitDrinkingWidget */,
 				E2D4E38B958CCAF4218AC4C1 /* QuitDrinkingTests */,
@@ -329,6 +376,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F4FD9C301D4E3BAD0E6750C /* CampaignArt.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +401,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D772B2094AB90C348EDA85D1 /* CampaignDetailView.swift in Sources */,
+				F683E65CD5939902197DA2A8 /* CampaignMapView.swift in Sources */,
+				598DB23AB5F3F4C27D7F6387 /* CampaignStop.swift in Sources */,
+				1A7AEF691D72A423C968ED92 /* CampaignTrail.swift in Sources */,
 				85DA87215A88D96F6A3603F7,
 				BE0EC4F8B5C74EB5557598D1,
 				628B936ABB879F41994406A8,
@@ -368,7 +420,6 @@
 				F9643E1DD8D6D8134288F891,
 				83333246C94B2AB76E5CAF9A,
 				C0A2ABEC807C55519E382772,
-				86EE2D3FFB92180D00C6BCF8,
 				AC1FE1FA41669ECB659E2176,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -393,6 +444,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		91C7F0271D4CCD4201857DB7 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9F20A8EAA8B4E390C0064F87 /* CampaignMapTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -406,6 +458,7 @@
 			target = 2D7B83E258E18D4751BD55CC /* QuitDrinking */;
 			targetProxy = F1981E74AB3786725C5F3BF1 /* PBXContainerItemProxy */;
 		};
+		EE9EB1AC52A063BEE732D2D5 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 2D7B83E258E18D4751BD55CC /* QuitDrinking */; targetProxy = F1981E74AB3786725C5F3BF1 /* PBXContainerItemProxy */; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -413,6 +466,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				WIDGET_SHARING_ENTITLEMENTS = "";
+				"WIDGET_SHARING_ENTITLEMENTS[sdk=iphonesimulator*]" = QuitDrinking/WidgetSharing.entitlements;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
@@ -436,6 +491,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				WIDGET_SHARING_ENTITLEMENTS = "";
+				"WIDGET_SHARING_ENTITLEMENTS[sdk=iphonesimulator*]" = QuitDrinking/WidgetSharing.entitlements;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
@@ -464,6 +521,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = "$(WIDGET_SHARING_ENTITLEMENTS)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -481,6 +539,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = "$(WIDGET_SHARING_ENTITLEMENTS)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -495,6 +554,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuitDrinkingWidget/Info.plist;
 				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = "$(WIDGET_SHARING_ENTITLEMENTS)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -510,6 +570,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuitDrinkingWidget/Info.plist;
 				MARKETING_VERSION = 1.0;
+				CODE_SIGN_ENTITLEMENTS = "$(WIDGET_SHARING_ENTITLEMENTS)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuest.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -541,6 +602,26 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.DawnQuestTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QuitDrinking.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/QuitDrinking";
+			};
+			name = Release;
+		};
+		9F891A802384C5D01D4ABE3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = QuitDrinking;
+			};
+			name = Debug;
+		};
+		F96EF1E35449BE6FF0917A39 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quitdrinking.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = QuitDrinking;
 			};
 			name = Release;
 		};
@@ -583,6 +664,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		0325480B9ABABFB8D40D8D67 /* Build configuration list for QuitDrinkingUITests */ = {isa = XCConfigurationList; buildConfigurations = (9F891A802384C5D01D4ABE3D, F96EF1E35449BE6FF0917A39,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = A3D1FE180DF90AB8D55E0DA3 /* Project object */;

@@ -1,56 +1,87 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 @main
 struct QuitDrinkingApp: App {
-    private let sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            PlayerProgress.self,
-            CheckInRecord.self
-        ])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        do {
-            return try ModelContainer(for: schema, configurations: [configuration])
-        } catch {
-            fatalError("無法建立 SwiftData ModelContainer: \(error)")
-        }
-    }()
+    @State private var store: Result<ModelContainer, Error>?
 
     var body: some Scene {
         WindowGroup {
-            BootstrapRootView()
+            switch store {
+            case .success(let container):
+                BootstrapRootView()
+                    .modelContainer(container)
+            case .failure:
+                StorageErrorView(retry: openStore)
+            case nil:
+                ProgressView("正在開啟戰績")
+                    .task { openStore() }
+            }
         }
-        .modelContainer(sharedModelContainer)
+    }
+
+    private func openStore() {
+        let schema = Schema([PlayerProgress.self, CheckInRecord.self])
+        #if DEBUG
+        let inMemory = ProcessInfo.processInfo.arguments.contains("-UITestInMemoryStore")
+        #else
+        let inMemory = false
+        #endif
+        // App Group 僅共享 Widget 快照。既有玩家的資料庫繼續使用主 App 容器。
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory, groupContainer: .none)
+        store = Result { try ModelContainer(for: schema, configurations: [configuration]) }
     }
 }
 
 private struct BootstrapRootView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var progresses: [PlayerProgress]
-    @Query(sort: \CheckInRecord.simulatedDate, order: .forward) private var records: [CheckInRecord]
+    @Query(sort: \CheckInRecord.simulatedDate) private var records: [CheckInRecord]
+    @State private var progress: PlayerProgress?
+    @State private var loadFailed = false
 
     var body: some View {
-        Group {
-            if let progress = progresses.first {
-                RootTabView(progress: progress, records: records)
-                    .onAppear {
-                        CombatEngine.syncSnapshot(progress: progress, records: records)
-                        WidgetCenter.shared.reloadAllTimelines()
-                    }
+        if let progress {
+            RootTabView(progress: progress, records: records)
+        } else if loadFailed {
+            StorageErrorView(retry: loadProgress)
+        } else {
+            ProgressView("正在讀取戰績")
+                .task { loadProgress() }
+        }
+    }
+
+    private func loadProgress() {
+        do {
+            var query = FetchDescriptor<PlayerProgress>(sortBy: [SortDescriptor(\PlayerProgress.createdAt)])
+            query.fetchLimit = 1
+            if let existing = try modelContext.fetch(query).first {
+                progress = existing
             } else {
-                ProgressView()
-                    .tint(ThemeTokens.mintVitality)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(ThemeTokens.canvasBackground)
-                    .onAppear {
-                        let initial = PlayerProgress()
-                        modelContext.insert(initial)
-                        try? modelContext.save()
-                        CombatEngine.syncSnapshot(progress: initial, records: [])
-                        WidgetCenter.shared.reloadAllTimelines()
-                    }
+                let initial = PlayerProgress()
+                modelContext.insert(initial)
+                try modelContext.save()
+                progress = initial
             }
+            if let progress {
+                CombatEngine.syncSnapshot(progress: progress, records: records)
+            }
+        } catch {
+            modelContext.rollback()
+            loadFailed = true
+        }
+    }
+}
+
+private struct StorageErrorView: View {
+    let retry: () -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label("無法開啟戰績", systemImage: "externaldrive.badge.exclamationmark")
+        } description: {
+            Text("請確認裝置的可用空間後重試。")
+        } actions: {
+            Button("重試", action: retry)
         }
     }
 }

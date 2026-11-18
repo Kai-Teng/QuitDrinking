@@ -18,8 +18,7 @@ struct MonsterStatusProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<MonsterWidgetEntry>) -> Void) {
         let entry = MonsterWidgetEntry(date: .now, snapshot: SharedSnapshotStore.load())
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: .now) ?? .now.addingTimeInterval(1800)
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+        completion(Timeline(entries: [entry], policy: .never))
     }
 }
 
@@ -146,6 +145,7 @@ struct MonsterStatusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: MonsterStatusProvider()) { entry in
             MonsterStatusWidgetView(entry: entry)
+                .privacySensitive()
                 .containerBackground(ThemeTokens.canvasBackground, for: .widget)
         }
         .configurationDisplayName("怪獸狀態")

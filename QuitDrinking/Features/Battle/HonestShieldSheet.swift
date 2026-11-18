@@ -4,26 +4,30 @@ import SwiftUI
 struct HonestShieldSheet: View {
     let monsterSpec: MonsterSpec
     let willTriggerShield: Bool
+    let currentHP: Int
     let weeklyUsed: Int
     let weeklyLimit: Int
     let isModerationMode: Bool
-    let onSubmit: (_ units: Int, _ triggers: [RelapseTriggerTag], _ note: String) -> Void
+    let onSubmit: (_ units: Int, _ triggers: [RelapseTriggerTag], _ note: String) throws -> CombatActionStatus
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var saveFailed = false
+    @State private var submitNeedsTrigger = false
     @State private var units: Int = 1
-    @State private var selectedTriggers: Set<RelapseTriggerTag> = [.socialGathering]
+    @State private var selectedTriggers: Set<RelapseTriggerTag> = []
     @State private var note: String = ""
 
+    private var showsShield: Bool { willTriggerShield || submitNeedsTrigger }
+
     private var predictedHeal: Int {
-        if willTriggerShield {
-            return CombatEngine.honestShieldHealAmount(units: units, monsterMaxHP: monsterSpec.maxHP)
-        } else {
-            return CombatEngine.withinBudgetHealAmount(units: units, monsterMaxHP: monsterSpec.maxHP)
-        }
+        CombatEngine.appliedHealAmount(
+            units: units, monsterMaxHP: monsterSpec.maxHP, currentHP: currentHP, triggersShield: showsShield
+        )
     }
 
     private var canSubmit: Bool {
-        !willTriggerShield || !selectedTriggers.isEmpty
+        !showsShield || !selectedTriggers.isEmpty
     }
 
     var body: some View {
@@ -41,7 +45,7 @@ struct HonestShieldSheet: View {
                 .padding(20)
             }
             .background(ThemeTokens.canvasBackground)
-            .navigationTitle(willTriggerShield ? "開啟誠實護盾" : "額度內小酌紀錄")
+            .navigationTitle(showsShield ? "開啟誠實護盾" : "額度內小酌紀錄")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
@@ -53,17 +57,25 @@ struct HonestShieldSheet: View {
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
                     Button {
-                        onSubmit(units, Array(selectedTriggers), note.trimmingCharacters(in: .whitespacesAndNewlines))
-                        dismiss()
+                        do {
+                            let tags = RelapseTriggerTag.allCases.filter(selectedTriggers.contains)
+                            if case .requiresTrigger = try onSubmit(units, tags, note.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                                submitNeedsTrigger = true
+                            } else {
+                                dismiss()
+                            }
+                        } catch {
+                            saveFailed = true
+                        }
                     } label: {
                         Label(
-                            willTriggerShield ? "確認紀錄・啟動誠實護盾 (+\(predictedHeal) HP)" : "確認紀錄・保留連勝 (+\(predictedHeal) HP)",
-                            systemImage: willTriggerShield ? "shield.lefthalf.filled" : "checkmark.seal.fill"
+                            showsShield ? "確認紀錄・啟動誠實護盾 (+\(predictedHeal) HP)" : "確認紀錄・保留連勝 (+\(predictedHeal) HP)",
+                            systemImage: showsShield ? "shield.lefthalf.filled" : "checkmark.seal.fill"
                         )
                     }
                     .buttonStyle(
                         TactilePrimaryButtonStyle(
-                            fillColor: willTriggerShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration,
+                            fillColor: showsShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration,
                             foregroundColor: ThemeTokens.canvasBackground
                         )
                     )
@@ -77,23 +89,28 @@ struct HonestShieldSheet: View {
             }
         }
         .preferredColorScheme(.dark)
+        .alert("紀錄未儲存", isPresented: $saveFailed) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("表單內容已保留，請再試一次。")
+        }
     }
 
     private var statusBanner: some View {
-        let bannerColor = willTriggerShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration
+        let bannerColor = showsShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration
         return HStack(alignment: .top, spacing: 12) {
-            Image(systemName: willTriggerShield ? "shield.lefthalf.filled" : "checkmark.shield.fill")
+            Image(systemName: showsShield ? "shield.lefthalf.filled" : "checkmark.shield.fill")
                 .font(.title2)
                 .foregroundStyle(bannerColor)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(willTriggerShield ? "誠實紀錄＝護盾展開・絕不歸零" : "仍在安全額度內（本週已用 \(weeklyUsed)/\(weeklyLimit) 次）")
+                Text(showsShield ? "誠實紀錄・啟動護盾" : "符合減量計畫（本週已用 \(weeklyUsed)/\(weeklyLimit) 次）")
                     .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
                     .foregroundStyle(ThemeTokens.inkPrimary)
 
                 Text(
-                    willTriggerShield
+                    showsShield
                     ? "\(monsterSpec.name)只會微幅回復 \(predictedHeal) HP（單次上限 20%），關卡與累計省錢全部保留，並獲得 +25 反省經驗。"
                     : "這場小酌在你的減量計畫內，每日攻擊連勝將繼續保留，怪獸僅輕微回復 \(predictedHeal) HP。"
                 )
@@ -122,10 +139,11 @@ struct HonestShieldSheet: View {
 
             HStack {
                 Button {
-                    if units > 1 { units -= 1 }
+                    units -= 1
                 } label: {
                     Image(systemName: "minus.circle.fill")
                         .font(.title2)
+                        .frame(minWidth: 44, minHeight: 44)
                         .foregroundStyle(units > 1 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
                 }
                 .buttonStyle(.plain)
@@ -136,21 +154,19 @@ struct HonestShieldSheet: View {
 
                 VStack(spacing: 2) {
                     Text("\(units) \(units == 6 ? "+" : "")杯")
-                        .font(ThemeTokens.roundedNumericFont(size: 28, weight: .bold))
+                        .font(ThemeTokens.roundedTitleFont(.title))
                         .monospacedDigit()
                         .foregroundStyle(ThemeTokens.inkPrimary)
-                    Text("約 1 罐啤酒 / 1 杯紅酒")
-                        .font(.caption)
-                        .foregroundStyle(ThemeTokens.inkSecondary)
                 }
 
                 Spacer()
 
                 Button {
-                    if units < 6 { units += 1 }
+                    units += 1
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title2)
+                        .frame(minWidth: 44, minHeight: 44)
                         .foregroundStyle(units < 6 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
                 }
                 .buttonStyle(.plain)
@@ -172,25 +188,23 @@ struct HonestShieldSheet: View {
     private var triggersSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(willTriggerShield ? "是什麼情境想喝？（至少選 1 項）" : "情境標籤（選填）")
+                Text(showsShield ? "是什麼情境想喝？（至少選 1 項）" : "情境標籤（選填）")
                     .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .semibold))
                     .foregroundStyle(ThemeTokens.inkPrimary)
                 Spacer()
-                if isModerationMode && !willTriggerShield {
+                if isModerationMode && !showsShield {
                     Text("額度內不計入破戒")
                         .font(.caption)
                         .foregroundStyle(ThemeTokens.skyModeration)
                 }
             }
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: 10) {
                 ForEach(RelapseTriggerTag.allCases) { tag in
                     let isSelected = selectedTriggers.contains(tag)
                     Button {
                         if isSelected {
-                            if selectedTriggers.count > 1 || !willTriggerShield {
-                                selectedTriggers.remove(tag)
-                            }
+                            selectedTriggers.remove(tag)
                         } else {
                             selectedTriggers.insert(tag)
                         }
@@ -200,7 +214,7 @@ struct HonestShieldSheet: View {
                                 .font(.subheadline)
                             Text(tag.rawValue)
                                 .font(.subheadline.weight(.medium))
-                                .lineLimit(1)
+                                .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
                         }
                         .foregroundStyle(isSelected ? ThemeTokens.amberShield : ThemeTokens.inkPrimary)

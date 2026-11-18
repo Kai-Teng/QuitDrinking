@@ -18,7 +18,7 @@ final class BattleStageScene: SKScene {
     private let vfxOverlayNode = SKNode()
 
     private var ambientEmitter: SKEmitterNode?
-    private var monsterBubbleEmitter: SKEmitterNode?
+    private var needsStaticFrame = true
     private var isSceneBuilt = false
 
     // Procedural textures cached once
@@ -35,12 +35,14 @@ final class BattleStageScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
         layoutNodesForCurrentSize()
+        needsStaticFrame = true
     }
 
     // MARK: - Public Configuration & Triggers
 
     func configure(spec: MonsterSpec, hpRatio: Double, reduceMotion: Bool) {
-        let levelChanged = (spec.level != currentSpec.level) || !isSceneBuilt
+        let levelChanged = spec.level != currentSpec.level
+        let motionChanged = self.reduceMotion != reduceMotion
         let prevCritical = currentHPRatio <= 0.30 && currentHPRatio > 0
         let nowCritical = hpRatio <= 0.30 && hpRatio > 0
 
@@ -48,18 +50,36 @@ final class BattleStageScene: SKScene {
         currentHPRatio = hpRatio
         self.reduceMotion = reduceMotion
 
-        buildSceneIfNeeded()
+        needsStaticFrame = true
+        guard isSceneBuilt else {
+            buildSceneIfNeeded()
+            return
+        }
 
-        if levelChanged {
+        if motionChanged {
+            worldNode.removeAllActions()
+            worldNode.position = .zero
+            vfxOverlayNode.removeAllChildren()
+            buildStarfieldBackdrop()
+        }
+        if levelChanged || motionChanged {
             rebuildMagicCircle()
             rebuildAmbientParticles()
-            rebuildMonsterRig(animateEntrance: true)
+            rebuildMonsterRig(animateEntrance: levelChanged)
         } else if prevCritical != nowCritical {
             updateMonsterCriticalAura(isCritical: nowCritical)
         }
     }
 
+    /// With Reduce Motion the scene is static between configuration and layout changes.
+    func shouldRenderFrame() -> Bool {
+        guard reduceMotion else { return true }
+        defer { needsStaticFrame = false }
+        return needsStaticFrame
+    }
+
     func triggerAttackVFX(damage: Int) {
+        guard !reduceMotion else { return }
         buildSceneIfNeeded()
 
         // 1. 對角刀光斬擊弧線
@@ -69,27 +89,25 @@ final class BattleStageScene: SKScene {
         spawnHitSparks(color: skColor(hex: 0x2DD4BF), count: 32)
 
         // 3. 怪獸受擊後退、閃白與鏡頭震動
-        if !reduceMotion {
-            runCameraShake(intensity: 9.0, duration: 0.24)
-            let recoil = SKAction.sequence([
-                SKAction.group([
-                    SKAction.moveBy(x: 14, y: 10, duration: 0.05),
-                    SKAction.scaleX(to: 1.14, y: 0.84, duration: 0.05),
-                    SKAction.rotate(byAngle: -0.10, duration: 0.05)
-                ]),
-                SKAction.group([
-                    SKAction.moveBy(x: -22, y: -12, duration: 0.07),
-                    SKAction.scaleX(to: 0.90, y: 1.10, duration: 0.07),
-                    SKAction.rotate(byAngle: 0.16, duration: 0.07)
-                ]),
-                SKAction.group([
-                    SKAction.move(to: CGPoint(x: 0, y: 8), duration: 0.14),
-                    SKAction.scale(to: 1.0, duration: 0.14),
-                    SKAction.rotate(toAngle: 0, duration: 0.14)
-                ])
+        runCameraShake(intensity: 9.0, duration: 0.24)
+        let recoil = SKAction.sequence([
+            SKAction.group([
+                SKAction.moveBy(x: 14, y: 10, duration: 0.05),
+                SKAction.scaleX(to: 1.14, y: 0.84, duration: 0.05),
+                SKAction.rotate(byAngle: -0.10, duration: 0.05)
+            ]),
+            SKAction.group([
+                SKAction.moveBy(x: -22, y: -12, duration: 0.07),
+                SKAction.scaleX(to: 0.90, y: 1.10, duration: 0.07),
+                SKAction.rotate(byAngle: 0.16, duration: 0.07)
+            ]),
+            SKAction.group([
+                SKAction.move(to: CGPoint(x: 0, y: 8), duration: 0.14),
+                SKAction.scale(to: 1.0, duration: 0.14),
+                SKAction.rotate(toAngle: 0, duration: 0.14)
             ])
-            monsterRootNode.run(recoil, withKey: "hitRecoil")
-        }
+        ])
+        monsterRootNode.run(recoil, withKey: "hitRecoil")
 
         // 受擊衝擊光圈
         let shockRing = SKShapeNode(circleOfRadius: 28)
@@ -117,6 +135,7 @@ final class BattleStageScene: SKScene {
     }
 
     func triggerShieldVFX(healAmount: Int, isWithinBudget: Bool) {
+        guard !reduceMotion else { return }
         buildSceneIfNeeded()
 
         let shieldHex: UInt32 = isWithinBudget ? 0x38BDF8 : 0xF59E0B
@@ -179,9 +198,9 @@ final class BattleStageScene: SKScene {
     }
     #endif
 
-    private func pokeMonsterReaction() {
-        spawnHitSparks(color: skColor(hex: currentSpec.accentHex), count: 12)
+    func pokeMonsterReaction() {
         guard !reduceMotion else { return }
+        spawnHitSparks(color: skColor(hex: currentSpec.accentHex), count: 12)
         let bounce = SKAction.sequence([
             .scaleX(to: 1.12, y: 0.88, duration: 0.07),
             .scaleX(to: 0.94, y: 1.08, duration: 0.09),
@@ -291,9 +310,11 @@ final class BattleStageScene: SKScene {
 
     private func rebuildAmbientParticles() {
         ambientEmitter?.removeFromParent()
+        ambientEmitter = nil
+        guard !reduceMotion else { return }
         let emitter = SKEmitterNode()
         emitter.particleTexture = Self.softCircleTexture
-        emitter.particleBirthRate = reduceMotion ? 3 : 9
+        emitter.particleBirthRate = 9
         emitter.particleLifetime = 2.8
         emitter.particleLifetimeRange = 0.8
         emitter.particlePositionRange = CGVector(dx: 160, dy: 20)
@@ -319,7 +340,8 @@ final class BattleStageScene: SKScene {
     private func rebuildMonsterRig(animateEntrance: Bool) {
         monsterRootNode.removeAllActions()
         monsterRootNode.removeAllChildren()
-        monsterBubbleEmitter = nil
+        monsterRootNode.position = CGPoint(x: 0, y: 8)
+        monsterRootNode.zRotation = 0
 
         let accent = skColor(hex: currentSpec.accentHex)
 
@@ -412,23 +434,24 @@ final class BattleStageScene: SKScene {
         outerBody.addChild(highlightSmall)
 
         // 頭頂微醺氣泡粒子發射器
-        let bubbles = SKEmitterNode()
-        bubbles.particleTexture = Self.softCircleTexture
-        bubbles.particleBirthRate = reduceMotion ? 2 : 5
-        bubbles.particleLifetime = 1.8
-        bubbles.particlePositionRange = CGVector(dx: 70, dy: 20)
-        bubbles.position = CGPoint(x: 0, y: 18)
-        bubbles.emissionAngle = .pi / 2
-        bubbles.emissionAngleRange = .pi / 6
-        bubbles.particleSpeed = 28
-        bubbles.particleAlpha = 0.65
-        bubbles.particleAlphaSpeed = -0.32
-        bubbles.particleScale = 0.28
-        bubbles.particleScaleSpeed = 0.08
-        bubbles.particleColor = SKColor.white
-        bubbles.particleColorBlendFactor = 1.0
-        outerBody.addChild(bubbles)
-        monsterBubbleEmitter = bubbles
+        if !reduceMotion {
+            let bubbles = SKEmitterNode()
+            bubbles.particleTexture = Self.softCircleTexture
+            bubbles.particleBirthRate = 5
+            bubbles.particleLifetime = 1.8
+            bubbles.particlePositionRange = CGVector(dx: 70, dy: 20)
+            bubbles.position = CGPoint(x: 0, y: 18)
+            bubbles.emissionAngle = .pi / 2
+            bubbles.emissionAngleRange = .pi / 6
+            bubbles.particleSpeed = 28
+            bubbles.particleAlpha = 0.65
+            bubbles.particleAlphaSpeed = -0.32
+            bubbles.particleScale = 0.28
+            bubbles.particleScaleSpeed = 0.08
+            bubbles.particleColor = SKColor.white
+            bubbles.particleColorBlendFactor = 1.0
+            outerBody.addChild(bubbles)
+        }
 
         // 表情五官（支援眨眼）
         let faceNode = makeExpressiveFace(eyeSpacing: 42, angry: false, cheekColor: skColor(hex: 0xF43F5E))

@@ -43,9 +43,14 @@ enum SharedSnapshotStore {
     static let appGroupID = "group.com.quitdrinking.app"
     static let snapshotKey = "dawnquest.widget.snapshot.v1"
 
+    private static var sharedDefaults: UserDefaults? {
+        guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) != nil else { return nil }
+        return UserDefaults(suiteName: appGroupID)
+    }
+
     static func save(
         _ snapshot: BattleWidgetSnapshot,
-        suiteDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID),
+        suiteDefaults: UserDefaults? = sharedDefaults,
         fallbackDefaults: UserDefaults = .standard
     ) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
@@ -56,7 +61,7 @@ enum SharedSnapshotStore {
     }
 
     static func load(
-        suiteDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID),
+        suiteDefaults: UserDefaults? = sharedDefaults,
         fallbackDefaults: UserDefaults = .standard
     ) -> BattleWidgetSnapshot {
         if let data = suiteDefaults?.data(forKey: snapshotKey),

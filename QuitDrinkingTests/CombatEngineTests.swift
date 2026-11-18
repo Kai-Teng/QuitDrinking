@@ -82,7 +82,9 @@ final class CombatEngineTests: XCTestCase {
         }
 
         XCTAssertEqual(summary.outcome, .honestShieldRelapse)
-        XCTAssertEqual(summary.hpDelta, 140, "Max heal is capped at 20% of Lv.2 maxHP (700)")
+        XCTAssertEqual(CombatEngine.honestShieldHealAmount(units: 10, monsterMaxHP: 700), 140)
+        XCTAssertEqual(summary.hpDelta, 50, "Report only the HP actually restored")
+        XCTAssertEqual(records.first?.hpDelta, 50)
         XCTAssertEqual(progress.currentMonsterHP, 700, "HP cannot exceed current monster maxHP or regress to Lv.1")
         XCTAssertEqual(progress.activeMonsterLevel, 2)
         XCTAssertEqual(progress.currentStreak, 0)
@@ -224,7 +226,7 @@ final class CombatEngineTests: XCTestCase {
         XCTAssertEqual(blocked, .campaignStandbyRequiresRematch)
 
         // Rematch Lv.1 preserves lifetime stats
-        CombatEngine.rematchMonster(level: 1, progress: progress, records: records, now: now, calendar: fixedCalendar)
+        XCTAssertTrue(CombatEngine.rematchMonster(level: 1, progress: progress))
         XCTAssertEqual(progress.activeMonsterLevel, 1)
         XCTAssertEqual(progress.currentMonsterHP, 300)
         XCTAssertEqual(progress.totalCleanCheckIns, 31)
@@ -232,6 +234,60 @@ final class CombatEngineTests: XCTestCase {
         XCTAssertEqual(progress.honestShieldCount, 2)
         XCTAssertEqual(progress.insightXP, 50)
         XCTAssertEqual(progress.currentStreak, 6)
+    }
+
+    func testRematchRejectsLockedOrUnknownLevels() {
+        let progress = PlayerProgress(activeMonsterLevel: 3, currentMonsterHP: 800)
+        XCTAssertFalse(CombatEngine.rematchMonster(level: 1, progress: progress))
+        progress.hasCompletedCampaign = true
+        XCTAssertFalse(CombatEngine.rematchMonster(level: 99, progress: progress))
+        XCTAssertEqual(progress.activeMonsterLevel, 3)
+        XCTAssertEqual(progress.currentMonsterHP, 800)
+    }
+
+    func testRejectedShieldDoesNotAdvanceDayOrInventTrigger() {
+        let today = makeDate(year: 2026, month: 11, day: 16)
+        let progress = PlayerProgress(currentMonsterHP: 180, currentStreak: 1)
+        let records = [CheckInRecord(simulatedDate: today, outcome: .soberAttack, hpDelta: -100, monsterLevel: 1)]
+        let result = CombatEngine.logDrink(
+            progress: progress, records: records, units: 1, triggers: [], note: "",
+            insertRecord: { _ in XCTFail("Invalid forms must not create a record") }, now: today, calendar: fixedCalendar
+        )
+        XCTAssertEqual(result, .requiresTrigger)
+        XCTAssertEqual(progress.virtualDayOffset, 0)
+        XCTAssertEqual(progress.currentStreak, 1)
+        XCTAssertEqual(progress.honestShieldCount, 0)
+        XCTAssertEqual(progress.currentMonsterHP, 180)
+    }
+
+    func testPreviewAndWriteAgreeAcrossSundayToMonday() {
+        let sunday = makeDate(year: 2026, month: 11, day: 22)
+        let monday = fixedCalendar.startOfDay(for: makeDate(year: 2026, month: 11, day: 23))
+        let progress = PlayerProgress(goalMode: .moderationBudget, weeklySessionLimit: 1)
+        var records = [CheckInRecord(simulatedDate: sunday, outcome: .withinBudgetDrink, hpDelta: 0, monsterLevel: 1)]
+        XCTAssertFalse(CombatEngine.willTriggerHonestShieldOnDrink(progress: progress, records: records, now: sunday, calendar: fixedCalendar))
+        let result = CombatEngine.logDrink(progress: progress, records: records, units: 1, triggers: [], note: "",
+                                           insertRecord: { records.append($0) }, now: sunday, calendar: fixedCalendar)
+        guard case .applied(let summary) = result else { return XCTFail("Expected Monday check-in") }
+        XCTAssertEqual(summary.recordDate, monday)
+        XCTAssertEqual(summary.outcome, .withinBudgetDrink)
+        XCTAssertEqual(summary.hpDelta, 0)
+        XCTAssertEqual(CombatEngine.weeklyDrinksUsed(on: sunday, records: records, calendar: fixedCalendar), 1)
+    }
+
+    func testPersistedCheckInRejectsRepeatedTapBeforeViewRefresh() throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: PlayerProgress.self, CheckInRecord.self, configurations: config)
+        let context = container.mainContext
+        let progress = PlayerProgress(demoRapidMode: false)
+        context.insert(progress)
+        let now = makeDate(year: 2026, month: 11, day: 16)
+        _ = try CombatEngine.checkIn(.soberAttack, progress: progress, context: context, now: now, calendar: fixedCalendar)
+        let retry = try CombatEngine.checkIn(.soberAttack, progress: progress, context: context, now: now, calendar: fixedCalendar)
+        XCTAssertEqual(retry, .alreadyCheckedInToday)
+        let reader = ModelContext(container)
+        XCTAssertEqual(try reader.fetchCount(FetchDescriptor<CheckInRecord>()), 1)
+        XCTAssertEqual(try reader.fetch(FetchDescriptor<PlayerProgress>()).first?.currentMonsterHP, 200)
     }
 
     func testDemoRapidModeVsStrictDailyLock() {
@@ -284,7 +340,7 @@ final class CombatEngineTests: XCTestCase {
         context.insert(progress)
 
         let monday = makeDate(year: 2026, month: 11, day: 16)
-        CombatEngine.applyDemoPreset(.shieldStandby, progress: progress, existingRecords: [], context: context, now: monday, calendar: fixedCalendar)
+        try CombatEngine.applyDemoPreset(.shieldStandby, progress: progress, context: context, now: monday, calendar: fixedCalendar)
 
         let records = try context.fetch(FetchDescriptor<CheckInRecord>())
         XCTAssertEqual(progress.goalMode, .moderationBudget)
@@ -292,5 +348,24 @@ final class CombatEngineTests: XCTestCase {
         XCTAssertEqual(progress.currentMonsterHP, 400)
         XCTAssertEqual(CombatEngine.currentWeeklyDrinksUsed(progress: progress, records: records, now: monday, calendar: fixedCalendar), 2)
         XCTAssertTrue(CombatEngine.willTriggerHonestShieldOnDrink(progress: progress, records: records, now: monday, calendar: fixedCalendar))
+    }
+}
+
+extension CombatEngineTests {
+    func testSevenDayChartUsesSimulatedLocalDatesAndLatestSameDayRecord() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 14 * 3600))
+        let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 30, hour: 12)))
+        let progress = PlayerProgress(virtualDayOffset: 2)
+        let firstDay = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 26)))
+        let tomorrow = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 12, day: 3)))
+        let older = CheckInRecord(simulatedDate: firstDay, createdAt: now, outcome: .soberAttack, hpDelta: -100, monsterLevel: 1)
+        let latest = CheckInRecord(simulatedDate: firstDay, createdAt: now.addingTimeInterval(1), outcome: .withinBudgetDrink, hpDelta: 15, monsterLevel: 1)
+        let future = CheckInRecord(simulatedDate: tomorrow, outcome: .honestShieldRelapse, hpDelta: 45, monsterLevel: 1)
+
+        let buckets = CombatEngine.recentSevenDayBuckets(progress: progress, records: [future, latest, older], now: now, calendar: calendar)
+        XCTAssertEqual(buckets.map(\.dayLabel), ["11/26", "11/27", "11/28", "11/29", "11/30", "12/1", "今日"])
+        XCTAssertEqual(buckets.compactMap(\.outcome), [.withinBudgetDrink])
+        XCTAssertEqual(buckets.map(\.magnitude), [15, 0, 0, 0, 0, 0, 0])
     }
 }

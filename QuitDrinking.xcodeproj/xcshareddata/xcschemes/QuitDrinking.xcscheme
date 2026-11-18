@@ -38,6 +38,16 @@
                ReferencedContainer = "container:QuitDrinking.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6B99806D2FB8BE9A245B5C22"
+               BuildableName = "QuitDrinkingUITests.xctest"
+               BlueprintName = "QuitDrinkingUITests"
+               ReferencedContainer = "container:QuitDrinking.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

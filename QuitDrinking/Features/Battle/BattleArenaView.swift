@@ -1,6 +1,6 @@
+import Accessibility
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 /// 分頁一：主戰場與晉級互動舞台。
 struct BattleArenaView: View {
@@ -9,10 +9,13 @@ struct BattleArenaView: View {
 
     let progress: PlayerProgress
     let records: [CheckInRecord]
+    let isStageVisible: Bool
     let onOpenDemo: () -> Void
-    let onOpenBestiary: () -> Void
+    let onOpenCampaign: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showDrinkSheet = false
+    @State private var saveFailed = false
     @State private var hitTrigger = 0
     @State private var shieldTrigger = 0
     @State private var lastDamageAmount = 100
@@ -49,50 +52,59 @@ struct BattleArenaView: View {
     }
 
     var body: some View {
-        ZStack {
-            ThemeTokens.canvasBackground
-                .ignoresSafeArea()
-
-            VStack(spacing: 16) {
-                topStatusBar
-
-                if isVictoryStandby {
-                    victoryStandbyStage
-                } else {
-                    monsterBattleCard
-                    actionDock
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-
-            if let celebrationContext {
-                LevelUpCelebrationView(
-                    defeatedMonster: celebrationContext.defeated,
-                    nextMonster: celebrationContext.promotedTo,
-                    completedCampaign: celebrationContext.completedCampaign
-                ) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        self.celebrationContext = nil
+        GeometryReader { viewport in
+            ScrollView {
+                VStack(spacing: 16) {
+                    topStatusBar
+                    if isVictoryStandby {
+                        victoryStandbyStage
+                    } else {
+                        monsterBattleCard
+                        actionDock
                     }
                 }
-                .transition(.opacity)
-                .zIndex(20)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .frame(minHeight: viewport.size.height)
             }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .background(ThemeTokens.canvasBackground)
+        .fullScreenCover(item: $celebrationContext) { victory in
+            LevelUpCelebrationView(
+                defeatedMonster: victory.defeated,
+                nextMonster: victory.promotedTo,
+                completedCampaign: victory.completedCampaign
+            ) {
+                celebrationContext = nil
+            }
+        }
+        .alert("未能儲存變更", isPresented: $saveFailed) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("請再試一次。")
+        }
+        .task(id: feedbackNotice?.id) {
+            guard feedbackNotice != nil else { return }
+            do {
+                try await Task.sleep(for: .seconds(2.4))
+            } catch { return }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { feedbackNotice = nil }
         }
         .sensoryFeedback(.impact(weight: .heavy), trigger: hitTrigger)
         .sensoryFeedback(.warning, trigger: shieldTrigger)
         .sheet(isPresented: $showDrinkSheet) {
-            let triggersShield = CombatEngine.willTriggerHonestShieldOnDrink(progress: progress, records: records)
+            let used = CombatEngine.nextCheckInWeeklyDrinksUsed(progress: progress, records: records)
             HonestShieldSheet(
                 monsterSpec: activeMonster,
-                willTriggerShield: triggersShield,
-                weeklyUsed: weeklyUsed,
+                willTriggerShield: CombatEngine.requiresHonestShield(progress: progress, weeklyUsed: used),
+                currentHP: progress.currentMonsterHP,
+                weeklyUsed: used,
                 weeklyLimit: progress.weeklySessionLimit,
                 isModerationMode: progress.goalMode == .moderationBudget
             ) { units, triggers, note in
-                handleDrinkSubmission(units: units, triggers: triggers, note: note)
+                try handleDrinkSubmission(units: units, triggers: triggers, note: note)
             }
         }
     }
@@ -112,7 +124,10 @@ struct BattleArenaView: View {
                         .foregroundStyle(ThemeTokens.inkSecondary)
                 }
             }
+            .frame(minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())
+            .accessibilityElement(children: .combine)
+            .accessibilityAction(named: "開啟 Demo 控制台", onOpenDemo)
             .onLongPressGesture(minimumDuration: 0.6) {
                 onOpenDemo()
             }
@@ -144,14 +159,15 @@ struct BattleArenaView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("切換目標模式")
-            .accessibilityHint("點擊切換完全斷酒或減量控酒模式")
+            .accessibilityValue(progress.goalMode.displayName)
+            .accessibilityHint("切換完全斷酒或減量控酒模式")
 
             if !progress.pureRecordingMode {
                 Button(action: onOpenDemo) {
                     Image(systemName: "slider.horizontal.3")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(ThemeTokens.inkPrimary)
-                        .frame(width: 34, height: 34)
+                        .frame(width: 44, height: 44)
                         .background(
                             Circle()
                                 .fill(ThemeTokens.cardSurface)
@@ -195,7 +211,7 @@ struct BattleArenaView: View {
                             .fill(ThemeTokens.canvasBackground.opacity(0.75))
                         Capsule()
                             .fill(hpBarColor)
-                            .frame(width: max(8, geo.size.width * hpRatio))
+                            .frame(width: geo.size.width * hpRatio)
                             .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.8), value: hpRatio)
                     }
                 }
@@ -206,7 +222,7 @@ struct BattleArenaView: View {
 
                 HStack {
                     Text("HP \(progress.currentMonsterHP) / \(activeMonster.maxHP)")
-                        .font(ThemeTokens.roundedNumericFont(size: 15, weight: .bold))
+                        .font(ThemeTokens.roundedTitleFont(.subheadline))
                         .monospacedDigit()
                         .foregroundStyle(ThemeTokens.inkPrimary)
 
@@ -216,7 +232,7 @@ struct BattleArenaView: View {
                         Text(feedbackNotice.text)
                             .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
                             .foregroundStyle(feedbackNotice.color)
-                            .transition(.opacity.combined(with: .move(edge: .trailing)))
+                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .trailing)))
                     } else {
                         Text(activeMonster.subtitle)
                             .font(.caption)
@@ -231,6 +247,7 @@ struct BattleArenaView: View {
             MonsterAvatarView(
                 spec: activeMonster,
                 hpRatio: hpRatio,
+                isStageVisible: isStageVisible && !showDrinkSheet && celebrationContext == nil,
                 hitTrigger: hitTrigger,
                 shieldTrigger: shieldTrigger,
                 lastDamageAmount: lastDamageAmount,
@@ -241,7 +258,10 @@ struct BattleArenaView: View {
             Spacer(minLength: 0)
 
             // RPG Status Pills
-            HStack(spacing: 10) {
+            let statsLayout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
+                : AnyLayout(HStackLayout(spacing: 8))
+            statsLayout {
                 statPill(
                     icon: "bolt.fill",
                     tint: ThemeTokens.mintVitality,
@@ -282,16 +302,16 @@ struct BattleArenaView: View {
                 .font(ThemeTokens.roundedTitleFont(.title, weight: .bold))
                 .foregroundStyle(ThemeTokens.inkPrimary)
 
-            Text("你已擊敗所有階段心魔！終身累計省下 NT$ \(CombatEngine.impactSummary(for: progress).totalSavedNTD)，隨時可前往圖鑑挑選任一怪獸再次挑戰。")
+            Text("你已擊敗所有階段心魔！終身累計省下 NT$ \(CombatEngine.impactSummary(for: progress).totalSavedNTD)，可從關卡地圖挑選任一怪獸再次挑戰。")
                 .font(.subheadline)
                 .foregroundStyle(ThemeTokens.inkSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
 
             Button {
-                onOpenBestiary()
+                onOpenCampaign()
             } label: {
-                Label("前往圖鑑・選擇再戰關卡", systemImage: "book.closed.fill")
+                Label("前往關卡・選擇再戰怪獸", systemImage: "map.fill")
             }
             .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.amberShield))
             .padding(.top, 8)
@@ -354,12 +374,13 @@ struct BattleArenaView: View {
     // MARK: - Actions
 
     private func toggleGoalMode() {
-        withAnimation(.easeOut(duration: 0.2)) {
-            progress.goalMode = progress.goalMode == .strictAbstinence ? .moderationBudget : .strictAbstinence
+        progress.goalMode = progress.goalMode == .strictAbstinence ? .moderationBudget : .strictAbstinence
+        do {
+            try CombatEngine.saveAndSync(progress: progress, records: records, context: modelContext)
+        } catch {
+            saveFailed = true
+            return
         }
-        try? modelContext.save()
-        CombatEngine.syncSnapshot(progress: progress, records: records)
-        WidgetCenter.shared.reloadAllTimelines()
         showNotice(
             "已切換為「\(progress.goalMode.displayName)」",
             color: progress.goalMode == .strictAbstinence ? ThemeTokens.mintVitality : ThemeTokens.skyModeration
@@ -367,52 +388,41 @@ struct BattleArenaView: View {
     }
 
     private func performSoberAttack() {
-        let status = CombatEngine.logSoberAttack(
-            progress: progress,
-            records: records,
-            insertRecord: { modelContext.insert($0) }
-        )
+        let status: CombatActionStatus
+        do {
+            status = try CombatEngine.checkIn(.soberAttack, progress: progress, context: modelContext)
+        } catch {
+            saveFailed = true
+            return
+        }
 
         switch status {
         case .applied(let summary):
-            try? modelContext.save()
-            WidgetCenter.shared.reloadAllTimelines()
             lastDamageAmount = abs(summary.hpDelta)
             hitTrigger += 1
-            showNotice("暴擊 \(summary.hpDelta) HP！", color: ThemeTokens.mintVitality)
+            showNotice("造成 \(abs(summary.hpDelta)) HP 傷害", color: ThemeTokens.mintVitality)
             if let defeated = summary.defeatedMonster {
-                Task {
-                    try? await Task.sleep(for: .milliseconds(280))
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        celebrationContext = LevelUpContext(
-                            defeated: defeated,
-                            promotedTo: summary.promotedToMonster,
-                            completedCampaign: summary.completedCampaign
-                        )
-                    }
-                }
+                celebrationContext = LevelUpContext(
+                    defeated: defeated,
+                    promotedTo: summary.promotedToMonster,
+                    completedCampaign: summary.completedCampaign
+                )
             }
+        case .requiresTrigger:
+            assertionFailure("清醒攻擊不需要情境標籤")
         case .alreadyCheckedInToday:
             showNotice("今日已完成戰役紀錄，明天再來發動攻擊！", color: ThemeTokens.amberShield)
         case .campaignStandbyRequiresRematch:
-            onOpenBestiary()
+            onOpenCampaign()
         }
     }
 
-    private func handleDrinkSubmission(units: Int, triggers: [RelapseTriggerTag], note: String) {
-        let status = CombatEngine.logDrink(
-            progress: progress,
-            records: records,
-            units: units,
-            triggers: triggers,
-            note: note,
-            insertRecord: { modelContext.insert($0) }
+    private func handleDrinkSubmission(units: Int, triggers: [RelapseTriggerTag], note: String) throws -> CombatActionStatus {
+        let status = try CombatEngine.checkIn(
+            .drink(units: units, triggers: triggers, note: note), progress: progress, context: modelContext
         )
-
         switch status {
         case .applied(let summary):
-            try? modelContext.save()
-            WidgetCenter.shared.reloadAllTimelines()
             lastHealAmount = summary.hpDelta
             lastHealWasWithinBudget = (summary.outcome == .withinBudgetDrink)
             shieldTrigger += 1
@@ -424,22 +434,17 @@ struct BattleArenaView: View {
         case .alreadyCheckedInToday:
             showNotice("今日已完成戰役紀錄，明天再來紀錄！", color: ThemeTokens.amberShield)
         case .campaignStandbyRequiresRematch:
-            onOpenBestiary()
+            onOpenCampaign()
+        case .requiresTrigger:
+            break // 表單保留輸入，提示玩家補選情境。
         }
+        return status
     }
 
     private func showNotice(_ text: String, color: Color) {
-        let notice = BattleFloatingNotice(text: text, color: color)
-        withAnimation(.easeOut(duration: 0.2)) {
-            feedbackNotice = notice
-        }
-        Task {
-            try? await Task.sleep(for: .seconds(2.4))
-            if feedbackNotice?.id == notice.id {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    feedbackNotice = nil
-                }
-            }
+        AccessibilityNotification.Announcement(text).post()
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+            feedbackNotice = BattleFloatingNotice(text: text, color: color)
         }
     }
 }
@@ -450,7 +455,8 @@ private struct BattleFloatingNotice: Equatable {
     let color: Color
 }
 
-private struct LevelUpContext {
+private struct LevelUpContext: Identifiable {
+    var id: Int { defeated.level }
     let defeated: MonsterSpec
     let promotedTo: MonsterSpec?
     let completedCampaign: Bool

@@ -1,19 +1,23 @@
 import SwiftUI
+import SwiftData
 
 /// 1 頁式個人化設定引導 Sheet（可從 MAIC Demo 控制台開啟供簡報開場錄影）。
 struct OnboardingSheetView: View {
     @Environment(\.dismiss) private var dismiss
     let progress: PlayerProgress
-    let onConfirm: () -> Void
+    @Environment(\.modelContext) private var modelContext
+    let records: [CheckInRecord]
+
+    @State private var showSaveError = false
 
     @State private var draftMode: GoalMode
     @State private var draftWeeklyLimit: Int
     @State private var draftCostNTD: Int
     @State private var draftCalories: Int
 
-    init(progress: PlayerProgress, onConfirm: @escaping () -> Void) {
+    init(progress: PlayerProgress, records: [CheckInRecord]) {
         self.progress = progress
-        self.onConfirm = onConfirm
+        self.records = records
         _draftMode = State(initialValue: progress.goalMode)
         _draftWeeklyLimit = State(initialValue: progress.weeklySessionLimit)
         _draftCostNTD = State(initialValue: progress.costPerDrinkNTD)
@@ -26,7 +30,7 @@ struct OnboardingSheetView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("設定你的破曉戰役")
-                            .font(ThemeTokens.roundedNumericFont(size: 28, weight: .bold))
+                            .font(ThemeTokens.roundedTitleFont(.title))
                             .foregroundStyle(ThemeTokens.inkPrimary)
                         Text("不用把失敗看成歸零，每一步清醒都在削弱眼前的飲酒心魔。")
                             .font(.subheadline)
@@ -69,12 +73,13 @@ struct OnboardingSheetView: View {
                                 )
                             }
                             .buttonStyle(.plain)
+                            .accessibilityAddTraits(selected ? .isSelected : [])
                         }
                     }
 
                     if draftMode == .moderationBudget {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("2. 每週安全飲酒次數上限")
+                            Text("2. 每週飲酒次數目標")
                                 .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
                                 .foregroundStyle(ThemeTokens.inkPrimary)
 
@@ -137,13 +142,17 @@ struct OnboardingSheetView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                Button("開始破曉之旅") {
+                Button("儲存目標") {
                     progress.goalMode = draftMode
                     progress.weeklySessionLimit = draftWeeklyLimit
                     progress.costPerDrinkNTD = draftCostNTD
                     progress.caloriesPerDrink = draftCalories
-                    onConfirm()
-                    dismiss()
+                    do {
+                        try CombatEngine.saveAndSync(progress: progress, records: records, context: modelContext)
+                        dismiss()
+                    } catch {
+                        showSaveError = true
+                    }
                 }
                 .buttonStyle(TactilePrimaryButtonStyle())
                 .padding(.horizontal, 20)
@@ -153,5 +162,10 @@ struct OnboardingSheetView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .alert("無法儲存目標", isPresented: $showSaveError) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("你的選擇仍在這個畫面，請稍後再試一次。")
+        }
     }
 }

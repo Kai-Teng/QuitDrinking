@@ -1,10 +1,11 @@
 import SwiftUI
 import SpriteKit
 
-/// 破曉戰記 SpriteKit 2D 戰鬥舞台容器（透過原生 SpriteView 承載 BattleStageScene，支援點擊怪獸互動、刀光粒子與護盾穹頂特效）。
+/// 戰場中可互動的 SpriteKit 怪獸。
 struct MonsterAvatarView: View {
     let spec: MonsterSpec
     let hpRatio: Double
+    let isStageVisible: Bool
     let hitTrigger: Int
     let shieldTrigger: Int
     var lastDamageAmount: Int = 100
@@ -12,36 +13,55 @@ struct MonsterAvatarView: View {
     var lastHealWasWithinBudget: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var scene = BattleStageScene(size: CGSize(width: 340, height: 250))
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var scene: BattleStageScene?
+
+    private var isPaused: Bool { !isStageVisible || scenePhase != .active }
 
     var body: some View {
-        SpriteView(
-            scene: scene,
-            preferredFramesPerSecond: 60,
-            options: [.allowsTransparency]
-        )
+        ZStack {
+            if let scene {
+                SpriteView(
+                    scene: scene,
+                    isPaused: isPaused,
+                    preferredFramesPerSecond: 60,
+                    options: [.allowsTransparency, .shouldCullNonVisibleNodes],
+                    shouldRender: { _ in scene.shouldRenderFrame() }
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
         .frame(height: 248)
         .onAppear {
-            scene.configure(spec: spec, hpRatio: hpRatio, reduceMotion: reduceMotion)
+            if scene == nil {
+                scene = BattleStageScene(size: CGSize(width: 340, height: 250))
+            }
+            configureScene()
         }
-        .onChange(of: spec) { _, newSpec in
-            scene.configure(spec: newSpec, hpRatio: hpRatio, reduceMotion: reduceMotion)
+        .onChange(of: spec) { configureScene() }
+        .onChange(of: hpRatio) { configureScene() }
+        .onChange(of: reduceMotion) { configureScene() }
+        .onChange(of: isPaused) { if !isPaused { configureScene() } }
+        .onChange(of: hitTrigger) {
+            if !isPaused { scene?.triggerAttackVFX(damage: lastDamageAmount) }
         }
-        .onChange(of: hpRatio) { _, newRatio in
-            scene.configure(spec: spec, hpRatio: newRatio, reduceMotion: reduceMotion)
+        .onChange(of: shieldTrigger) {
+            scene?.triggerShieldVFX(healAmount: lastHealAmount, isWithinBudget: lastHealWasWithinBudget)
         }
-        .onChange(of: reduceMotion) { _, newReduce in
-            scene.configure(spec: spec, hpRatio: hpRatio, reduceMotion: newReduce)
+        .accessibilityRepresentation {
+            if reduceMotion {
+                Text(spec.name)
+                    .accessibilityAddTraits(.isImage)
+            } else {
+                Button(spec.name) { scene?.pokeMonsterReaction() }
+                    .accessibilityHint("與怪獸互動")
+            }
         }
-        .onChange(of: hitTrigger) { _, _ in
-            scene.triggerAttackVFX(damage: lastDamageAmount)
-        }
-        .onChange(of: shieldTrigger) { _, _ in
-            scene.triggerShieldVFX(healAmount: lastHealAmount, isWithinBudget: lastHealWasWithinBudget)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Lv.\(spec.level) \(spec.name) SpriteKit 戰鬥舞台")
-        .accessibilityValue("剩餘血量百分比 \(Int(hpRatio * 100))%")
-        .accessibilityHint("點選怪獸可觸發互動反應")
+        .accessibilityLabel("Lv.\(spec.level) \(spec.name)")
+        .accessibilityValue("剩餘血量 \(Int(hpRatio * 100))%")
+    }
+
+    private func configureScene() {
+        scene?.configure(spec: spec, hpRatio: hpRatio, reduceMotion: reduceMotion)
     }
 }

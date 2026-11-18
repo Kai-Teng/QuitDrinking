@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 /// MAIC 簡報錄影專用模擬控制台：支援 4 組一鍵場景切換、模擬演練模式開關與純淨錄影隱藏控制。
 struct MAICDemoSheet: View {
@@ -11,20 +10,17 @@ struct MAICDemoSheet: View {
     let records: [CheckInRecord]
     let onOpenOnboarding: () -> Void
 
+    @State private var selectedPreset = MAICDemoPreset.freshStart
+    @State private var confirmReplacement = false
+    @State private var showSaveError = false
+
     var body: some View {
         NavigationStack {
             List {
                 Section {
                     ForEach(MAICDemoPreset.allCases) { preset in
                         Button {
-                            CombatEngine.applyDemoPreset(
-                                preset,
-                                progress: progress,
-                                existingRecords: records,
-                                context: modelContext
-                            )
-                            WidgetCenter.shared.reloadAllTimelines()
-                            dismiss()
+                            select(preset)
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(preset.title)
@@ -40,20 +36,20 @@ struct MAICDemoSheet: View {
                 } header: {
                     Text("MAIC 簡報錄影快速預設")
                 } footer: {
-                    Text("點選會直接更新本地資料與桌面 Widget 快照，方便配合 Keynote 轉場錄影。")
+                    Text("套用預設會以範例進度與紀錄取代目前的戰績。")
                 }
 
                 Section("時間軸與錄影控制") {
                     Toggle("Demo 快速演練模式（連續打卡）", isOn: $progress.demoRapidMode)
                         .tint(ThemeTokens.mintVitality)
                         .onChange(of: progress.demoRapidMode) { _, _ in
-                            try? modelContext.save()
+                            saveSettings()
                         }
 
                     Toggle("純淨錄影模式（隱藏 Demo 按鈕）", isOn: $progress.pureRecordingMode)
                         .tint(ThemeTokens.amberShield)
                         .onChange(of: progress.pureRecordingMode) { _, _ in
-                            try? modelContext.save()
+                            saveSettings()
                         }
 
                     if progress.goalMode == .moderationBudget {
@@ -62,9 +58,7 @@ struct MAICDemoSheet: View {
                                 .monospacedDigit()
                         }
                         .onChange(of: progress.weeklySessionLimit) { _, _ in
-                            try? modelContext.save()
-                            CombatEngine.syncSnapshot(progress: progress, records: records)
-                            WidgetCenter.shared.reloadAllTimelines()
+                            saveSettings()
                         }
                     }
                 }
@@ -79,14 +73,7 @@ struct MAICDemoSheet: View {
                     }
 
                     Button(role: .destructive) {
-                        CombatEngine.applyDemoPreset(
-                            .freshStart,
-                            progress: progress,
-                            existingRecords: records,
-                            context: modelContext
-                        )
-                        WidgetCenter.shared.reloadAllTimelines()
-                        dismiss()
+                        select(.freshStart)
                     } label: {
                         Label("重置為全新玩家", systemImage: "arrow.counterclockwise")
                     }
@@ -105,5 +92,43 @@ struct MAICDemoSheet: View {
             }
         }
         .preferredColorScheme(.dark)
+        .confirmationDialog("取代目前的戰績？", isPresented: $confirmReplacement, titleVisibility: .visible) {
+            Button("套用預設並取代紀錄", role: .destructive) { apply(selectedPreset) }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("這會移除目前的打卡紀錄，並載入「\(selectedPreset.title)」。")
+        }
+        .alert("無法儲存變更", isPresented: $showSaveError) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("請確認裝置的可用空間後再試一次。")
+        }
+    }
+
+    private func select(_ preset: MAICDemoPreset) {
+        if records.isEmpty && progress.totalCleanCheckIns == 0 && progress.honestShieldCount == 0 {
+            apply(preset)
+        } else {
+            selectedPreset = preset
+            confirmReplacement = true
+        }
+    }
+
+    private func apply(_ preset: MAICDemoPreset) {
+        do {
+            try CombatEngine.applyDemoPreset(preset, progress: progress, context: modelContext)
+            dismiss()
+        } catch {
+            showSaveError = true
+        }
+    }
+
+    private func saveSettings() {
+        guard modelContext.hasChanges else { return }
+        do {
+            try CombatEngine.saveAndSync(progress: progress, records: records, context: modelContext)
+        } catch {
+            showSaveError = true
+        }
     }
 }
