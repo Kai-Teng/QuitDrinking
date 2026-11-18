@@ -22,10 +22,7 @@ final class CampaignMapTests: XCTestCase {
         XCTAssertTrue(current.waitForExistence(timeout: 5))
         XCTAssertTrue((current.value as? String)?.contains("90 / 700") == true)
         XCTAssertEqual(app.buttons["campaign.stop.1"].value as? String, "已擊敗")
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "關卡地圖"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
+        attachScreen("關卡地圖", app: app)
 
         app.buttons["campaign.stop.3"].tap()
         XCTAssertTrue(app.staticTexts["擊敗 Lv.2 怪獸後解鎖"].exists)
@@ -41,6 +38,45 @@ final class CampaignMapTests: XCTestCase {
         mapTab.tap()
         XCTAssertEqual(current.value as? String, "已擊敗")
         XCTAssertTrue((app.buttons["campaign.stop.3"].value as? String)?.contains("交戰中") == true)
+    }
+
+    @MainActor
+    func testDrinkingCheckInAppearsInJournal() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITestInMemoryStore"]
+        app.launch()
+
+        let drink = app.buttons["battle.logDrink"]
+        XCTAssertTrue(drink.waitForExistence(timeout: 10))
+        attachScreen("今日戰場", app: app)
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "今日沒喝")).firstMatch.tap()
+        drink.tap()
+        let submit = app.buttons["drink.submit"]
+        XCTAssertTrue(submit.waitForExistence(timeout: 5))
+        XCTAssertFalse(submit.isEnabled)
+        let guide = app.buttons["一標準杯有多少？"]
+        guide.tap()
+        let beerServing = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "250 mL", "250 mL")
+        ).firstMatch
+        XCTAssertTrue(beerServing.waitForExistence(timeout: 5))
+        guide.tap()
+        app.buttons["聚餐應酬"].tap()
+        XCTAssertTrue(submit.isEnabled)
+        attachScreen("喝酒紀錄", app: app)
+        submit.tap()
+        app.tabBars.buttons["戰績"].tap()
+        XCTAssertTrue(app.staticTexts["1 天沒喝酒，1 天有喝酒"].waitForExistence(timeout: 5))
+        attachScreen("飲酒手帳", app: app)
+    }
+
+    @MainActor
+    private func attachScreen(_ name: String, app: XCUIApplication) {
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = name
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     @MainActor

@@ -31,7 +31,7 @@ struct MonsterAvatarView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 248)
+        .frame(height: 176)
         .onAppear {
             if scene == nil {
                 scene = BattleStageScene(size: CGSize(width: 340, height: 250))

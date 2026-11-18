@@ -24,15 +24,19 @@ struct MonsterStatusProvider: TimelineProvider {
 
 struct MonsterStatusWidgetView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
+    @Environment(\.showsWidgetContainerBackground) private var showsPaper
     let entry: MonsterWidgetEntry
 
-    private var snapshot: BattleWidgetSnapshot { entry.snapshot }
-
-    private var hpTint: Color {
-        if snapshot.hpRatio > 0.40 { return ThemeTokens.mintVitality }
-        if snapshot.hpRatio > 0.20 { return ThemeTokens.amberShield }
-        return ThemeTokens.coralAlert
+    private var ink: Color {
+        showsPaper && renderingMode == .fullColor ? ThemeTokens.receiptInk : .primary
     }
+
+    private var accent: Color {
+        showsPaper && renderingMode == .fullColor ? ThemeTokens.printGreen : .primary
+    }
+
+    private var snapshot: BattleWidgetSnapshot { entry.snapshot }
 
     var body: some View {
         switch family {
@@ -46,78 +50,59 @@ struct MonsterStatusWidgetView: View {
     }
 
     private var smallBody: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Lv.\(snapshot.monsterLevel)")
-                    .font(ThemeTokens.roundedTitleFont(.caption2, weight: .bold))
-                    .foregroundStyle(ThemeTokens.canvasBackground)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(hpTint))
-                Spacer()
-                Image(systemName: snapshot.monsterSymbolName)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(hpTint)
-            }
-
-            Text(snapshot.monsterName)
-                .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                .foregroundStyle(ThemeTokens.inkPrimary)
-                .lineLimit(1)
-
-            Spacer(minLength: 0)
-
-            VStack(alignment: .leading, spacing: 4) {
-                ProgressView(value: snapshot.hpRatio)
-                    .tint(hpTint)
-                Text("HP \(snapshot.currentHP)/\(snapshot.maxHP)")
-                    .font(ThemeTokens.roundedNumericFont(size: 12, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(ThemeTokens.inkSecondary)
-            }
+        VStack(alignment: .leading, spacing: 5) {
+            savings
+            Spacer(minLength: 4)
+            monsterStatus
         }
     }
 
     private var mediumBody: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(hpTint.opacity(0.16))
-                    .frame(width: 78, height: 78)
-                Image(systemName: snapshot.monsterSymbolName)
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(hpTint)
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                savings
+                Text("攻擊連勝 \(snapshot.currentStreak) 天")
+                    .foregroundStyle(ink)
+                    .font(ThemeTokens.roundedTitleFont(.caption))
+                    .monospacedDigit()
             }
-
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Lv.\(snapshot.monsterLevel) \(snapshot.monsterName)")
-                        .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("連勝 \(snapshot.currentStreak) 天")
-                        .font(ThemeTokens.roundedTitleFont(.caption2, weight: .bold))
-                        .monospacedDigit()
-                        .foregroundStyle(ThemeTokens.mintVitality)
-                }
-
-                ProgressView(value: snapshot.hpRatio)
-                    .tint(hpTint)
-
-                HStack {
-                    Text("HP \(snapshot.currentHP) / \(snapshot.maxHP)")
-                        .font(ThemeTokens.roundedNumericFont(size: 13, weight: .bold))
-                        .monospacedDigit()
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-                    Spacer()
-                    Text("已省 NT$ \(snapshot.totalSavedNTD)")
-                        .font(.caption2.weight(.semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(ThemeTokens.amberShield)
-                }
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Divider().overlay(ink.opacity(0.3))
+            monsterStatus
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private var savings: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("估計省下的酒錢")
+                .font(ThemeTokens.printTitleFont(.subheadline))
+            Text("NT$ \(snapshot.totalSavedNTD.formatted())")
+                .font(ThemeTokens.roundedTitleFont(.title2))
+                .monospacedDigit()
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+                .foregroundStyle(accent)
+        }
+        .foregroundStyle(ink)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var monsterStatus: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("Lv.\(snapshot.monsterLevel) \(snapshot.monsterName)")
+                .font(ThemeTokens.roundedTitleFont(.subheadline))
+                .monospacedDigit()
+                .lineLimit(2)
+            ProgressView(value: snapshot.hpRatio)
+                .tint(accent)
+                .accessibilityHidden(true)
+            Text("\(snapshot.currentHP) / \(snapshot.maxHP) HP")
+                .font(ThemeTokens.roundedTitleFont(.caption, weight: .medium))
+                .monospacedDigit()
+        }
+        .foregroundStyle(ink)
+        .accessibilityElement(children: .combine)
     }
 
     private var accessoryRectangularBody: some View {
@@ -127,7 +112,7 @@ struct MonsterStatusWidgetView: View {
                     .font(.headline)
                     .lineLimit(1)
                 Spacer()
-                Text("\(snapshot.currentStreak)d")
+                Text("連勝 \(snapshot.currentStreak) 天")
                     .font(.caption.weight(.bold))
                     .monospacedDigit()
             }
@@ -146,10 +131,10 @@ struct MonsterStatusWidget: Widget {
         StaticConfiguration(kind: kind, provider: MonsterStatusProvider()) { entry in
             MonsterStatusWidgetView(entry: entry)
                 .privacySensitive()
-                .containerBackground(ThemeTokens.canvasBackground, for: .widget)
+                .containerBackground(ThemeTokens.receiptPaper, for: .widget)
         }
-        .configurationDisplayName("怪獸狀態")
-        .description("在主畫面與鎖定畫面追蹤目前怪獸血量與清醒連勝。")
+        .configurationDisplayName("戒酒戰況")
+        .description("查看估計省下的酒錢與怪獸剩餘血量。")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular])
     }
 }

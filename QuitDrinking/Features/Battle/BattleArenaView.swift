@@ -41,12 +41,6 @@ struct BattleArenaView: View {
         return max(0, min(1, Double(progress.currentMonsterHP) / Double(activeMonster.maxHP)))
     }
 
-    private var hpBarColor: Color {
-        if hpRatio > 0.40 { return ThemeTokens.mintVitality }
-        if hpRatio > 0.20 { return ThemeTokens.amberShield }
-        return ThemeTokens.coralAlert
-    }
-
     private var isVictoryStandby: Bool {
         CombatEngine.isCampaignVictoryStandby(progress)
     }
@@ -61,12 +55,14 @@ struct BattleArenaView: View {
                     } else {
                         monsterBattleCard
                         actionDock
+                        progressLine
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
-                .frame(minHeight: viewport.size.height)
+                .frame(maxWidth: 540)
+                .frame(maxWidth: .infinity, minHeight: viewport.size.height, alignment: .top)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
@@ -109,266 +105,173 @@ struct BattleArenaView: View {
         }
     }
 
-    // MARK: - Top Bar
+    // MARK: - Daily check-in
 
     private var topStatusBar: some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("戰場")
-                    .font(ThemeTokens.roundedTitleFont(.title3, weight: .bold))
-                    .foregroundStyle(ThemeTokens.inkPrimary)
-
-                if !progress.pureRecordingMode {
-                    Text(progress.demoRapidMode ? "模擬日 Day \(progress.virtualDayOffset + 1)" : "嚴格每日一次模式")
-                        .font(.caption2)
-                        .foregroundStyle(ThemeTokens.inkSecondary)
-                }
-            }
-            .frame(minHeight: 44, alignment: .leading)
-            .contentShape(Rectangle())
-            .accessibilityElement(children: .combine)
-            .accessibilityAction(named: "開啟 Demo 控制台", onOpenDemo)
-            .onLongPressGesture(minimumDuration: 0.6) {
-                onOpenDemo()
-            }
-
-            Spacer()
-
-            Button {
-                toggleGoalMode()
-            } label: {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .center, spacing: 8) {
+                let day = CombatEngine.effectiveToday(for: progress)
                 HStack(spacing: 6) {
-                    Image(systemName: progress.goalMode == .strictAbstinence ? "flame.fill" : "gauge.with.dots.needle.33percent")
-                        .font(.caption.weight(.semibold))
-                    if progress.goalMode == .strictAbstinence {
-                        Text("完全斷酒")
-                    } else {
-                        Text("減量 \(weeklyUsed)/\(progress.weeklySessionLimit)")
-                            .monospacedDigit()
+                    Text(day, format: .dateTime.month().day())
+                    if progress.demoRapidMode && !progress.pureRecordingMode {
+                        Text("・演練日")
                     }
                 }
-                .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
-                .foregroundStyle(progress.goalMode == .strictAbstinence ? ThemeTokens.mintVitality : ThemeTokens.skyModeration)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(
-                    Capsule()
-                        .fill(ThemeTokens.cardSurface)
-                        .overlay(Capsule().strokeBorder(ThemeTokens.cardStroke, lineWidth: 1))
-                )
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("切換目標模式")
-            .accessibilityValue(progress.goalMode.displayName)
-            .accessibilityHint("切換完全斷酒或減量控酒模式")
-
-            if !progress.pureRecordingMode {
-                Button(action: onOpenDemo) {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-                        .frame(width: 44, height: 44)
-                        .background(
-                            Circle()
-                                .fill(ThemeTokens.cardSurface)
-                                .overlay(Circle().strokeBorder(ThemeTokens.cardStroke, lineWidth: 1))
-                        )
+                .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .medium))
+                .monospacedDigit()
+                .foregroundStyle(ThemeTokens.inkSecondary)
+                Spacer()
+                Button(action: toggleGoalMode) {
+                    Label(progress.goalMode == .strictAbstinence ? "完全斷酒" : "減量 \(weeklyUsed)/\(progress.weeklySessionLimit)",
+                          systemImage: "arrow.left.arrow.right")
+                        .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .semibold))
+                        .monospacedDigit()
+                        .frame(minHeight: 44)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("開啟 MAIC Demo 控制台")
+                .accessibilityLabel("切換目標模式")
+                .accessibilityValue(progress.goalMode.displayName)
+                .accessibilityHint("切換完全斷酒或減量控酒模式")
+                if !progress.pureRecordingMode {
+                    Button(action: onOpenDemo) {
+                        Label("開啟 MAIC Demo 控制台", systemImage: "slider.horizontal.3")
+                            .labelStyle(.iconOnly)
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            Text(isVictoryStandby ? "你的戒酒紀錄" : "今天喝酒了嗎？")
+                .font(.system(.largeTitle, design: .serif, weight: .bold))
+                .foregroundStyle(ThemeTokens.inkPrimary)
+                .frame(minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityAction(named: "開啟 Demo 控制台", onOpenDemo)
+                .onLongPressGesture(minimumDuration: 0.6, perform: onOpenDemo)
         }
+        .foregroundStyle(ThemeTokens.inkPrimary)
     }
 
-    // MARK: - Battle Stage
-
     private var monsterBattleCard: some View {
-        VStack(spacing: 16) {
-            // Monster header + HP bar
-            VStack(spacing: 10) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Lv.\(activeMonster.level)")
-                        .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
-                        .foregroundStyle(ThemeTokens.canvasBackground)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Capsule().fill(Color(hex: activeMonster.accentHex)))
-
-                    Text(activeMonster.name)
-                        .font(ThemeTokens.roundedTitleFont(.title2, weight: .bold))
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-
-                    Spacer()
-
-                    Text("建議 \(activeMonster.suggestedDays) 天")
-                        .font(.caption)
-                        .foregroundStyle(ThemeTokens.inkSecondary)
-                }
-
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(ThemeTokens.canvasBackground.opacity(0.75))
-                        Capsule()
-                            .fill(hpBarColor)
-                            .frame(width: geo.size.width * hpRatio)
-                            .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.8), value: hpRatio)
-                    }
-                }
-                .frame(height: 14)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("怪獸血條")
-                .accessibilityValue("\(progress.currentMonsterHP) 除以 \(activeMonster.maxHP)")
-
-                HStack {
-                    Text("HP \(progress.currentMonsterHP) / \(activeMonster.maxHP)")
-                        .font(ThemeTokens.roundedTitleFont(.subheadline))
-                        .monospacedDigit()
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-
-                    Spacer()
-
-                    if let feedbackNotice {
-                        Text(feedbackNotice.text)
-                            .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
-                            .foregroundStyle(feedbackNotice.color)
-                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .trailing)))
-                    } else {
-                        Text(activeMonster.subtitle)
-                            .font(.caption)
-                            .foregroundStyle(ThemeTokens.inkSecondary)
-                            .lineLimit(1)
-                    }
-                }
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("第 \(activeMonster.level) 關")
+                    .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
+                    .monospacedDigit()
+                Spacer()
+                Text(activeMonster.name)
+                    .font(.subheadline.weight(.semibold))
             }
-
-            Spacer(minLength: 0)
+            Divider().overlay(ThemeTokens.receiptInk.opacity(0.45))
+            Text(activeMonster.situation)
+                .font(.system(.title, design: .serif, weight: .bold))
+                .accessibilityAddTraits(.isHeader)
+            Text(activeMonster.subtitle)
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
 
             MonsterAvatarView(
                 spec: activeMonster,
                 hpRatio: hpRatio,
                 isStageVisible: isStageVisible && !showDrinkSheet && celebrationContext == nil,
-                hitTrigger: hitTrigger,
-                shieldTrigger: shieldTrigger,
-                lastDamageAmount: lastDamageAmount,
-                lastHealAmount: lastHealAmount,
+                hitTrigger: hitTrigger, shieldTrigger: shieldTrigger,
+                lastDamageAmount: lastDamageAmount, lastHealAmount: lastHealAmount,
                 lastHealWasWithinBudget: lastHealWasWithinBudget
             )
 
-            Spacer(minLength: 0)
-
-            // RPG Status Pills
-            let statsLayout = dynamicTypeSize.isAccessibilitySize
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
-                : AnyLayout(HStackLayout(spacing: 8))
-            statsLayout {
-                statPill(
-                    icon: "bolt.fill",
-                    tint: ThemeTokens.mintVitality,
-                    text: "連勝 \(progress.currentStreak) 天"
-                )
-                statPill(
-                    icon: "shield.lefthalf.filled",
-                    tint: ThemeTokens.amberShield,
-                    text: "誠實護盾 \(progress.honestShieldCount) 次"
-                )
-                statPill(
-                    icon: "sparkles",
-                    tint: ThemeTokens.skyModeration,
-                    text: "反省 \(progress.insightXP) XP"
-                )
+            HStack(alignment: .firstTextBaseline) {
+                Text("怪獸體力")
+                Spacer()
+                Text("\(progress.currentMonsterHP) / \(activeMonster.maxHP) HP")
+                    .monospacedDigit()
+            }
+            .font(ThemeTokens.roundedTitleFont(.caption, weight: .semibold))
+            .accessibilityElement(children: .combine)
+            ProgressView(value: hpRatio)
+                .tint(ThemeTokens.printGreen)
+                .environment(\.colorScheme, .light)
+                .accessibilityHidden(true)
+            if let feedbackNotice {
+                Text(feedbackNotice.text)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(ThemeTokens.printGreen)
+                    .transition(.opacity)
             }
         }
+        .foregroundStyle(ThemeTokens.receiptInk)
         .padding(18)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(ThemeTokens.cardSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                )
-        )
+        .background(ThemeTokens.receiptPaper, in: .rect(cornerRadius: 4))
     }
 
     private var victoryStandbyStage: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "crown.fill")
-                .font(.system(size: 64, weight: .bold))
-                .foregroundStyle(ThemeTokens.amberShield)
-
-            Text("破曉勇者・主線全破")
-                .font(ThemeTokens.roundedTitleFont(.title, weight: .bold))
-                .foregroundStyle(ThemeTokens.inkPrimary)
-
-            Text("你已擊敗所有階段心魔！終身累計省下 NT$ \(CombatEngine.impactSummary(for: progress).totalSavedNTD)，可從關卡地圖挑選任一怪獸再次挑戰。")
-                .font(.subheadline)
-                .foregroundStyle(ThemeTokens.inkSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-
-            Button {
-                onOpenCampaign()
-            } label: {
-                Label("前往關卡・選擇再戰怪獸", systemImage: "map.fill")
+        VStack(alignment: .leading, spacing: 18) {
+            Label("四關完成", systemImage: "checkmark.seal")
+                .font(.headline)
+                .foregroundStyle(ThemeTokens.printGreen)
+            Text("破曉勇者")
+                .font(.system(.largeTitle, design: .serif, weight: .bold))
+            Divider()
+            Text("已累積 \(progress.totalCleanCheckIns) 次沒喝酒的紀錄，估計省下 NT$ \(CombatEngine.impactSummary(for: progress).totalSavedNTD)。")
+                .monospacedDigit()
+            Button(action: onOpenCampaign) {
+                Label("前往關卡・選擇再戰怪獸", systemImage: "arrow.forward")
             }
-            .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.amberShield))
-            .padding(.top, 8)
-            Spacer()
+            .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.printGreen,
+                                                 foregroundColor: ThemeTokens.receiptPaper))
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(ThemeTokens.cardSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(ThemeTokens.amberShield.opacity(0.35), lineWidth: 1.5)
-                )
-        )
+        .foregroundStyle(ThemeTokens.receiptInk)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(ThemeTokens.receiptPaper, in: .rect(cornerRadius: 4))
     }
 
     private var actionDock: some View {
-        let shieldNow = CombatEngine.willTriggerHonestShieldOnDrink(progress: progress, records: records)
-        return VStack(spacing: 10) {
-            Button {
-                performSoberAttack()
-            } label: {
-                Label("今日沒喝・發動攻擊 (-\(attackPreview))", systemImage: "bolt.fill")
-                    .monospacedDigit()
+        VStack(spacing: 4) {
+            Button(action: performSoberAttack) {
+                HStack {
+                    Label("今日沒喝", systemImage: "waterbottle")
+                    Spacer(minLength: 8)
+                    Text("攻擊 \(attackPreview) HP")
+                        .font(ThemeTokens.roundedTitleFont(.subheadline))
+                        .monospacedDigit()
+                }
             }
-            .buttonStyle(TactilePrimaryButtonStyle())
-
-            Button {
-                showDrinkSheet = true
-            } label: {
-                Label(
-                    shieldNow ? "今天有喝・開啟誠實護盾" : "今天有喝・理性小酌紀錄",
-                    systemImage: "shield.lefthalf.filled"
-                )
+            .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.receiptPaper,
+                                                 foregroundColor: ThemeTokens.receiptInk))
+            Button { showDrinkSheet = true } label: {
+                HStack {
+                    Label("今天有喝", systemImage: "pencil.line")
+                    Spacer(minLength: 8)
+                    Text("記下杯數與情境")
+                        .font(.subheadline)
+                    Image(systemName: "chevron.right").font(.caption)
+                }
+                .frame(minHeight: 48)
+                .contentShape(Rectangle())
             }
-            .buttonStyle(
-                TactileOutlineButtonStyle(
-                    accentColor: shieldNow ? ThemeTokens.amberShield : ThemeTokens.skyModeration
-                )
-            )
+            .buttonStyle(.plain)
+            .foregroundStyle(ThemeTokens.inkPrimary)
+            .padding(.horizontal, 12)
+            .accessibilityIdentifier("battle.logDrink")
         }
     }
 
-    private func statPill(icon: String, tint: Color, text: String) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(tint)
-            Text(text)
-                .font(ThemeTokens.roundedTitleFont(.caption2, weight: .semibold))
-                .monospacedDigit()
-                .foregroundStyle(ThemeTokens.inkPrimary)
+    private var progressLine: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 5))
+            : AnyLayout(HStackLayout(spacing: 12))
+        return VStack(alignment: .leading, spacing: 10) {
+            Divider().overlay(ThemeTokens.cardStroke)
+            layout {
+                Text("清醒連勝 \(progress.currentStreak) 天")
+                Text("護盾 \(progress.honestShieldCount) 次")
+                Text("覺察 \(progress.insightXP) XP")
+            }
+            .font(ThemeTokens.roundedTitleFont(.caption, weight: .medium))
+            .monospacedDigit()
+            .foregroundStyle(ThemeTokens.inkSecondary)
         }
-        .padding(.horizontal, 9)
-        .padding(.vertical, 6)
-        .background(Capsule().fill(ThemeTokens.canvasBackground.opacity(0.65)))
     }
 
     // MARK: - Actions
@@ -381,10 +284,7 @@ struct BattleArenaView: View {
             saveFailed = true
             return
         }
-        showNotice(
-            "已切換為「\(progress.goalMode.displayName)」",
-            color: progress.goalMode == .strictAbstinence ? ThemeTokens.mintVitality : ThemeTokens.skyModeration
-        )
+        showNotice("目標已改為\(progress.goalMode.displayName)")
     }
 
     private func performSoberAttack() {
@@ -400,7 +300,7 @@ struct BattleArenaView: View {
         case .applied(let summary):
             lastDamageAmount = abs(summary.hpDelta)
             hitTrigger += 1
-            showNotice("造成 \(abs(summary.hpDelta)) HP 傷害", color: ThemeTokens.mintVitality)
+            showNotice("造成 \(abs(summary.hpDelta)) HP 傷害")
             if let defeated = summary.defeatedMonster {
                 celebrationContext = LevelUpContext(
                     defeated: defeated,
@@ -411,7 +311,7 @@ struct BattleArenaView: View {
         case .requiresTrigger:
             assertionFailure("清醒攻擊不需要情境標籤")
         case .alreadyCheckedInToday:
-            showNotice("今日已完成戰役紀錄，明天再來發動攻擊！", color: ThemeTokens.amberShield)
+            showNotice("今天已經打過卡了，明天可以再記一筆。")
         case .campaignStandbyRequiresRematch:
             onOpenCampaign()
         }
@@ -427,12 +327,12 @@ struct BattleArenaView: View {
             lastHealWasWithinBudget = (summary.outcome == .withinBudgetDrink)
             shieldTrigger += 1
             if summary.outcome == .honestShieldRelapse {
-                showNotice("誠實護盾展開！怪獸僅回 +\(summary.hpDelta) HP", color: ThemeTokens.amberShield)
+                showNotice("已記下飲酒情境。護盾生效，怪獸回復 \(summary.hpDelta) HP。")
             } else {
-                showNotice("額度內理性小酌（+\(summary.hpDelta) HP，連勝保留）", color: ThemeTokens.skyModeration)
+                showNotice("已記下這次飲酒，連勝保留。怪獸回復 \(summary.hpDelta) HP。")
             }
         case .alreadyCheckedInToday:
-            showNotice("今日已完成戰役紀錄，明天再來紀錄！", color: ThemeTokens.amberShield)
+            showNotice("今天已經打過卡了，明天可以再記一筆。")
         case .campaignStandbyRequiresRematch:
             onOpenCampaign()
         case .requiresTrigger:
@@ -441,10 +341,10 @@ struct BattleArenaView: View {
         return status
     }
 
-    private func showNotice(_ text: String, color: Color) {
+    private func showNotice(_ text: String) {
         AccessibilityNotification.Announcement(text).post()
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-            feedbackNotice = BattleFloatingNotice(text: text, color: color)
+            feedbackNotice = BattleFloatingNotice(text: text)
         }
     }
 }
@@ -452,7 +352,6 @@ struct BattleArenaView: View {
 private struct BattleFloatingNotice: Equatable {
     let id = UUID()
     let text: String
-    let color: Color
 }
 
 private struct LevelUpContext: Identifiable {

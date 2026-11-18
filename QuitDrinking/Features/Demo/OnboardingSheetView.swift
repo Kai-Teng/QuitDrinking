@@ -26,115 +26,44 @@ struct OnboardingSheetView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("設定你的破曉戰役")
-                            .font(ThemeTokens.roundedTitleFont(.title))
-                            .foregroundStyle(ThemeTokens.inkPrimary)
-                        Text("不用把失敗看成歸零，每一步清醒都在削弱眼前的飲酒心魔。")
-                            .font(.subheadline)
-                            .foregroundStyle(ThemeTokens.inkSecondary)
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("1. 選擇戰役模式")
-                            .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                            .foregroundStyle(ThemeTokens.inkPrimary)
-
+            Form {
+                Section {
+                    Picker("我的目標", selection: $draftMode) {
                         ForEach(GoalMode.allCases) { mode in
-                            let selected = draftMode == mode
-                            Button {
-                                draftMode = mode
-                            } label: {
-                                HStack(alignment: .top, spacing: 12) {
-                                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                                        .font(.title3)
-                                        .foregroundStyle(selected ? ThemeTokens.mintVitality : ThemeTokens.inkSecondary)
-
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(mode.displayName)
-                                            .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                                            .foregroundStyle(ThemeTokens.inkPrimary)
-                                        Text(mode.subtitle)
-                                            .font(.caption)
-                                            .foregroundStyle(ThemeTokens.inkSecondary)
-                                    }
-                                    Spacer()
-                                }
-                                .padding(16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                                        .fill(selected ? ThemeTokens.mintVitality.opacity(0.12) : ThemeTokens.cardSurface)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                                                .strokeBorder(selected ? ThemeTokens.mintVitality : ThemeTokens.cardStroke, lineWidth: 1.4)
-                                        )
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityAddTraits(selected ? .isSelected : [])
+                            Text(mode.displayName).tag(mode)
                         }
                     }
-
+                    .pickerStyle(.inline)
                     if draftMode == .moderationBudget {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("2. 每週飲酒次數目標")
-                                .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                                .foregroundStyle(ThemeTokens.inkPrimary)
-
-                            Stepper(value: $draftWeeklyLimit, in: 1...4) {
-                                Text("每週最多 \(draftWeeklyLimit) 次（額度內不破連勝）")
-                                    .font(.subheadline.weight(.medium))
-                                    .monospacedDigit()
-                                    .foregroundStyle(ThemeTokens.skyModeration)
-                            }
-                            .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                                    .fill(ThemeTokens.cardSurface)
-                            )
+                        Stepper(value: $draftWeeklyLimit, in: 1...4) {
+                            Text("每週最多喝 \(draftWeeklyLimit) 次").monospacedDigit()
                         }
                     }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(draftMode == .moderationBudget ? "3. 單次飲酒換算基準" : "2. 單次飲酒換算基準")
-                            .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                            .foregroundStyle(ThemeTokens.inkPrimary)
-
-                        VStack(spacing: 12) {
-                            Stepper(value: $draftCostNTD, in: 50...2000, step: 50) {
-                                HStack {
-                                    Text("平均酒錢")
-                                    Spacer()
-                                    Text("NT$ \(draftCostNTD)")
-                                        .monospacedDigit()
-                                        .foregroundStyle(ThemeTokens.mintVitality)
-                                }
-                            }
-                            Divider().overlay(ThemeTokens.cardStroke)
-                            Stepper(value: $draftCalories, in: 100...1500, step: 40) {
-                                HStack {
-                                    Text("平均熱量")
-                                    Spacer()
-                                    Text("\(draftCalories) kcal")
-                                        .monospacedDigit()
-                                        .foregroundStyle(ThemeTokens.amberShield)
-                                }
-                            }
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-                        .padding(16)
-                        .background(
-                            RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                                .fill(ThemeTokens.cardSurface)
-                        )
-                    }
+                } footer: {
+                    Text(draftMode == .strictAbstinence
+                         ? "沒喝酒的日子可以攻擊怪獸。有喝酒時，記下發生了什麼，就能使用誠實護盾。"
+                         : "每週一重新計算次數。額度內飲酒保留連勝；用完額度後，喝酒仍可用誠實護盾記錄。")
                 }
-                .padding(20)
+                .listRowBackground(ThemeTokens.cardSurface)
+
+                Section {
+                    Stepper(value: $draftCostNTD, in: 50...2000, step: 50) {
+                        Text("酒錢  NT$ \(draftCostNTD)").monospacedDigit()
+                    }
+                    Stepper(value: $draftCalories, in: 100...1500, step: 40) {
+                        Text("熱量  \(draftCalories) kcal").monospacedDigit()
+                    }
+                } header: {
+                    Text("平常喝一次酒")
+                } footer: {
+                    Text("每記下一個沒喝酒的日子，手帳就按這些金額和熱量估算一次。之後可以再調整。")
+                }
+                .listRowBackground(ThemeTokens.cardSurface)
             }
+            .scrollContentBackground(.hidden)
             .background(ThemeTokens.canvasBackground)
+            .navigationTitle("我的飲酒目標")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("關閉") { dismiss() }

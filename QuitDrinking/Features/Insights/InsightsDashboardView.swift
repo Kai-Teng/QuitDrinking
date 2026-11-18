@@ -9,7 +9,7 @@ struct InsightsDashboardView: View {
     @Environment(\.calendar) private var calendar
     @Environment(\.timeZone) private var timeZone
     @Environment(\.scenePhase) private var scenePhase
-    @ScaledMetric(relativeTo: .title2) private var metricSize = 22.0
+    @ScaledMetric(relativeTo: .largeTitle) private var metricSize = 43.0
 
     let progress: PlayerProgress
     let records: [CheckInRecord]
@@ -33,16 +33,19 @@ struct InsightsDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 18) {
-                    heroMetricsGrid
-                    sevenDayChartCard
-                    triggerInsightsCard(stats: CombatEngine.triggerBreakdown(from: records))
+                VStack(alignment: .leading, spacing: 28) {
+                    savingsReceipt
+                    weeklyLog
+                    Divider().overlay(ThemeTokens.cardStroke)
+                    drinkingContexts(stats: CombatEngine.triggerBreakdown(from: records))
                 }
+                .frame(maxWidth: 620)
                 .padding(.horizontal, 20)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
             }
             .background(ThemeTokens.canvasBackground)
-            .navigationTitle("戰績洞察")
+            .navigationTitle("飲酒手帳")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
@@ -50,7 +53,7 @@ struct InsightsDashboardView: View {
                     Button {
                         showBaselineEditor = true
                     } label: {
-                        Label("酒單基準", systemImage: "slider.horizontal.3")
+                        Label("調整估算", systemImage: "slider.horizontal.3")
                             .font(.subheadline)
                     }
                     .foregroundStyle(ThemeTokens.mintVitality)
@@ -74,79 +77,67 @@ struct InsightsDashboardView: View {
         }
     }
 
-    // MARK: - Hero Metrics
-
-    private var heroMetricsGrid: some View {
+    private var savingsReceipt: some View {
         let metrics = CombatEngine.impactSummary(for: progress)
-        let layout = dynamicTypeSize >= .xxLarge
-            ? AnyLayout(VStackLayout(spacing: 12))
-            : AnyLayout(HStackLayout(spacing: 12))
-        return layout {
-            metricCard(
-                title: "累積省下酒錢",
-                value: "NT$ \(metrics.totalSavedNTD.formatted())",
-                footnote: "已累計 \(progress.totalCleanCheckIns) 天清醒重擊",
-                icon: "banknote.fill",
-                accent: ThemeTokens.mintVitality
-            )
-
-            metricCard(
-                title: "少攝取熱量",
-                value: "\(metrics.totalCaloriesAvoided.formatted()) kcal",
-                footnote: "約 \(metrics.riceBowlsEquivalent.formatted(.number.precision(.fractionLength(1)))) 碗白飯",
-                icon: "flame.fill",
-                accent: ThemeTokens.amberShield
-            )
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("估計省下的酒錢")
+                .font(ThemeTokens.printTitleFont(.title3))
+                .accessibilityAddTraits(.isHeader)
+            Text("NT$ \(metrics.totalSavedNTD.formatted())")
+                .font(ThemeTokens.roundedNumericFont(size: metricSize, weight: .bold))
+                .foregroundStyle(ThemeTokens.printGreen)
+                .monospacedDigit()
+                .minimumScaleFactor(0.7)
+                .lineLimit(2)
+            Divider().overlay(ThemeTokens.receiptInk.opacity(0.55))
+            receiptLine("沒喝酒的日子", value: "\(progress.totalCleanCheckIns.formatted()) 天")
+            receiptLine("每次酒錢", value: "NT$ \(progress.costPerDrinkNTD.formatted())")
+            Divider().overlay(ThemeTokens.receiptInk.opacity(0.35))
+            receiptLine("估計少攝取的熱量", value: "\(metrics.totalCaloriesAvoided.formatted()) kcal")
+            Text("約 \(metrics.riceBowlsEquivalent.formatted(.number.precision(.fractionLength(1)))) 碗白飯")
+                .font(.footnote)
+                .monospacedDigit()
         }
+        .padding(.horizontal, 22)
+        .padding(.top, 20)
+        .padding(.bottom, 26)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(ThemeTokens.receiptInk)
+        .background(ThemeTokens.receiptPaper, in: ReceiptOutline())
     }
 
-    private func metricCard(title: String, value: String, footnote: String, icon: String, accent: Color) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(accent)
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(ThemeTokens.inkSecondary)
-            }
-
-            Text(value)
-                .font(ThemeTokens.roundedNumericFont(size: metricSize, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(ThemeTokens.inkPrimary)
-                .minimumScaleFactor(0.75)
-                .lineLimit(2)
-
-            Text(footnote)
-                .font(.caption2)
-                .foregroundStyle(ThemeTokens.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+    private func receiptLine(_ title: LocalizedStringKey, value: String) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 8))
+        return layout {
+            Text(title)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
+            Text(value).bold().monospacedDigit()
         }
+        .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .regular))
         .accessibilityElement(children: .combine)
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(ThemeTokens.cardSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                )
-        )
     }
 
     // MARK: - Swift Charts 7-Day Trend
 
-    private var sevenDayChartCard: some View {
+    private var weeklyLog: some View {
         let buckets = CombatEngine.recentSevenDayBuckets(progress: progress, records: records, now: referenceDate, calendar: chartCalendar)
+        let soberDays = buckets.count { $0.outcome == .soberAttack }
+        let drinkingDays = buckets.count { $0.outcome == .withinBudgetDrink || $0.outcome == .honestShieldRelapse }
         return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("近 7 日戰鬥趨勢")
-                        .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("近七天的打卡")
+                        .font(ThemeTokens.printTitleFont(.title2))
+                        .accessibilityAddTraits(.isHeader)
                         .foregroundStyle(ThemeTokens.inkPrimary)
-                    Text(buckets.contains { $0.outcome != nil } ? "每日顯示最後一筆攻擊或回血量（HP）" : "這 7 天還沒有戰役紀錄")
+                    if soberDays + drinkingDays > 0 {
+                        Text("\(soberDays) 天沒喝酒，\(drinkingDays) 天有喝酒")
+                            .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .medium))
+                            .monospacedDigit()
+                    }
+                    Text(soberDays + drinkingDays > 0 ? "圖中是每天最後一次打卡的攻擊或回血量（HP）。" : "到戰場記下今天有沒有喝酒，就會留下第一筆紀錄。")
                         .font(.caption)
                         .foregroundStyle(ThemeTokens.inkSecondary)
                 }
@@ -169,7 +160,7 @@ struct InsightsDashboardView: View {
                     }
                 }
                 .accessibilityLabel(bucket.dayLabel)
-                .accessibilityValue(bucket.outcome.map { "\($0.displayTitle)，\(bucket.magnitude) HP" } ?? "未打卡")
+                .accessibilityValue(bucket.outcome.map { "\(ledgerLabel(for: $0))，\(bucket.magnitude) HP" } ?? "未打卡")
             }
             .frame(height: 180)
             .chartYAxis {
@@ -198,15 +189,6 @@ struct InsightsDashboardView: View {
                 legendItem(for: .honestShieldRelapse)
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(ThemeTokens.cardSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                )
-        )
     }
 
     private func color(for outcome: CheckInOutcomeType?) -> Color {
@@ -226,9 +208,17 @@ struct InsightsDashboardView: View {
         }
     }
 
+    private func ledgerLabel(for outcome: CheckInOutcomeType) -> String {
+        switch outcome {
+        case .soberAttack: "沒喝酒"
+        case .withinBudgetDrink: "額度內飲酒"
+        case .honestShieldRelapse: "飲酒・護盾"
+        }
+    }
+
     private func legendItem(for outcome: CheckInOutcomeType) -> some View {
         Label {
-            Text(outcome.displayTitle)
+            Text(ledgerLabel(for: outcome))
                 .foregroundStyle(ThemeTokens.inkSecondary)
         } icon: {
             Image(systemName: symbol(for: outcome))
@@ -239,14 +229,16 @@ struct InsightsDashboardView: View {
 
     // MARK: - Trigger Breakdown
 
-    private func triggerInsightsCard(stats: [TriggerStatItem]) -> some View {
+    private func drinkingContexts(stats: [TriggerStatItem]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("誠實護盾・高風險誘因分析")
-                    .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
+                Text("喝酒時的情境")
+                    .font(ThemeTokens.printTitleFont(.title2))
+                    .accessibilityAddTraits(.isHeader)
                     .foregroundStyle(ThemeTokens.inkPrimary)
                 Spacer()
-                Text("反省 \(progress.insightXP) XP")
+                Text("\(progress.insightXP) XP")
+                    .accessibilityLabel("誠實紀錄經驗值 \(progress.insightXP)")
                     .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(ThemeTokens.amberShield)
@@ -258,7 +250,7 @@ struct InsightsDashboardView: View {
                         .font(.title2)
                         .foregroundStyle(ThemeTokens.mintVitality)
                         .accessibilityHidden(true)
-                    Text("使用誠實護盾記下喝酒的原因後，就能在這裡看見最常遇到的情境。")
+                    Text("還沒有情境紀錄。下次開啟誠實護盾時，可以勾選當時發生了什麼。")
                         .font(.caption)
                         .foregroundStyle(ThemeTokens.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -266,7 +258,7 @@ struct InsightsDashboardView: View {
                 .padding(.vertical, 8)
             } else {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("依各誘因占全部勾選次數的比例排列")
+                    Text("依誠實護盾紀錄中各情境被勾選的比例排列。")
                         .font(.caption)
                         .foregroundStyle(ThemeTokens.inkSecondary)
                     ForEach(stats) { item in
@@ -291,15 +283,25 @@ struct InsightsDashboardView: View {
                 }
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(ThemeTokens.cardSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                )
-        )
+    }
+}
+
+/// A single perforated edge marks the subtotal slip inside the ledger.
+private struct ReceiptOutline: Shape {
+    func path(in rect: CGRect) -> Path {
+        let teeth = max(1, Int(rect.width / 10))
+        let width = rect.width / CGFloat(teeth)
+        var path = Path()
+        path.move(to: .init(x: rect.minX, y: rect.minY))
+        path.addLine(to: .init(x: rect.maxX, y: rect.minY))
+        path.addLine(to: .init(x: rect.maxX, y: rect.maxY - 3))
+        for step in 0..<teeth {
+            let right = rect.maxX - CGFloat(step) * width
+            path.addLine(to: .init(x: right - width / 2, y: rect.maxY))
+            path.addLine(to: .init(x: right - width, y: rect.maxY - 3))
+        }
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -319,10 +321,10 @@ private struct BaselineMetricEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("個人單次飲酒基準換算") {
+                Section("平常喝一次酒") {
                     Stepper(value: $cost, in: 50...2000, step: 50) {
                         HStack {
-                            Text("平均每次花費")
+                            Text("酒錢")
                             Spacer()
                             Text("NT$ \(cost)")
                                 .monospacedDigit()
@@ -332,7 +334,7 @@ private struct BaselineMetricEditorSheet: View {
 
                     Stepper(value: $calories, in: 100...1500, step: 40) {
                         HStack {
-                            Text("平均每次熱量")
+                            Text("酒的熱量")
                             Spacer()
                             Text("\(calories) kcal")
                                 .monospacedDigit()
@@ -340,10 +342,11 @@ private struct BaselineMetricEditorSheet: View {
                         }
                     }
                 }
+                .listRowBackground(ThemeTokens.cardSurface)
             }
             .scrollContentBackground(.hidden)
             .background(ThemeTokens.canvasBackground)
-            .navigationTitle("調整換算基準")
+            .navigationTitle("調整酒錢與熱量估算")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

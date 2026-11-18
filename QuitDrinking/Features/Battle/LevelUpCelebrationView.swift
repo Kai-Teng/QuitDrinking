@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 擊敗怪獸後的晉級慶祝全螢幕覆蓋層，適合錄製 Keynote 簡報高潮轉場。
+/// 晉級時蓋下這一關的完成章，保留可捲動的紙本紀錄。
 struct LevelUpCelebrationView: View {
     let defeatedMonster: MonsterSpec
     let nextMonster: MonsterSpec?
@@ -11,103 +11,59 @@ struct LevelUpCelebrationView: View {
     @State private var appeared = false
 
     var body: some View {
-        ZStack {
-            ThemeTokens.canvasBackground.opacity(0.95)
-                .ignoresSafeArea()
-
-            GeometryReader { viewport in
-                ScrollView {
-                    VStack(spacing: 24) {
-                        Spacer()
-
-                        ZStack {
-                            Circle()
-                                .fill(ThemeTokens.amberShield.opacity(0.18))
-                                .frame(width: 132, height: 132)
-                            Image(systemName: completedCampaign ? "crown.fill" : "trophy.fill")
-                                .font(.system(size: 56, weight: .bold))
-                                .foregroundStyle(ThemeTokens.amberShield)
-                        }
-                        .scaleEffect(appeared || reduceMotion ? 1.0 : 0.72)
-                        .opacity(appeared || reduceMotion ? 1.0 : 0.0)
-                        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.72), value: appeared)
-
-                        VStack(spacing: 8) {
-                            Text(completedCampaign ? "主線全破！破曉來臨" : "擊敗 Lv.\(defeatedMonster.level) 怪獸！")
-                                .font(ThemeTokens.roundedTitleFont(.caption, weight: .bold))
-                                .foregroundStyle(ThemeTokens.mintVitality)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Capsule().fill(ThemeTokens.mintVitality.opacity(0.16)))
-
-                            Text(defeatedMonster.name)
-                                .font(ThemeTokens.roundedTitleFont(.largeTitle))
-                                .foregroundStyle(ThemeTokens.inkPrimary)
-
-                            Text("解鎖稱號「\(defeatedMonster.titleReward)」")
-                                .font(ThemeTokens.roundedTitleFont(.title3, weight: .semibold))
-                                .foregroundStyle(ThemeTokens.amberShield)
-                        }
-
-                        if let nextMonster {
-                            HStack(spacing: 14) {
-                                Image(systemName: nextMonster.symbolName)
-                                    .font(.title2)
-                                    .foregroundStyle(Color(hex: nextMonster.accentHex))
-                                    .frame(width: 44, height: 44)
-                                    .background(Circle().fill(Color(hex: nextMonster.accentHex).opacity(0.16)))
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("下一關：Lv.\(nextMonster.level) \(nextMonster.name)")
-                                        .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                                        .foregroundStyle(ThemeTokens.inkPrimary)
-                                    Text("最大血量 \(nextMonster.maxHP) HP・建議目標 \(nextMonster.suggestedDays) 天")
-                                        .font(.caption)
-                                        .foregroundStyle(ThemeTokens.inkSecondary)
-                                }
-                                Spacer()
-                            }
-                            .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                                    .fill(ThemeTokens.cardSurface)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                                            .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                                    )
-                            )
-                            .padding(.horizontal, 24)
-                        } else {
-                            Text("你已征服所有飲酒心魔，隨時可到「關卡」重溫或再戰任一關卡。")
-                                .font(.subheadline)
-                                .foregroundStyle(ThemeTokens.inkSecondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
-                        }
-
-                        Spacer()
-
-                        Button {
-                            onContinue()
-                        } label: {
-                            if let nextMonster {
-                                Text("迎戰 Lv.\(nextMonster.level) \(nextMonster.name)")
-                            } else {
-                                Text("領取「破曉勇者」榮耀")
-                            }
-                        }
-                        .buttonStyle(TactilePrimaryButtonStyle())
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 32)
+        GeometryReader { viewport in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(alignment: .top, spacing: 12) {
+                        Text(completedCampaign ? "四關完成" : "第 \(defeatedMonster.level) 關完成")
+                            .font(.system(.title, design: .serif, weight: .bold))
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: 8)
+                        Image(systemName: "checkmark.seal")
+                            .font(.largeTitle)
+                            .foregroundStyle(ThemeTokens.printGreen)
+                            .rotationEffect(.degrees(-8))
+                            .scaleEffect(appeared || reduceMotion ? 1 : 1.25)
+                            .opacity(appeared || reduceMotion ? 1 : 0)
+                            .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: appeared)
+                            .accessibilityHidden(true)
                     }
-                    .padding(.top, 12)
-                    .frame(minHeight: viewport.size.height)
+                    Divider().overlay(ThemeTokens.receiptInk.opacity(0.35))
+                    Text(defeatedMonster.situation)
+                        .font(.system(.largeTitle, design: .serif, weight: .bold))
+                    Text("擊敗\(defeatedMonster.name)，獲得「\(defeatedMonster.titleReward)」。")
+                        .font(.headline)
+                    if let nextMonster {
+                        Divider().overlay(ThemeTokens.receiptInk.opacity(0.35))
+                        Text("下一關・\(nextMonster.situation)")
+                            .font(.headline)
+                        Text(nextMonster.subtitle)
+                            .font(.subheadline)
+                        Text("\(nextMonster.name)　\(nextMonster.maxHP) HP")
+                            .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .medium))
+                            .monospacedDigit()
+                    } else {
+                        Text("你的每一筆打卡都已留下。之後可以從關卡地圖選一個情境再挑戰。")
+                    }
+                    Button(action: onContinue) {
+                        if let nextMonster {
+                            Text("迎戰 Lv.\(nextMonster.level) \(nextMonster.name)")
+                        } else {
+                            Text("領取「破曉勇者」榮耀")
+                        }
+                    }
+                    .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.printGreen,
+                                                         foregroundColor: ThemeTokens.receiptPaper))
                 }
-                .scrollBounceBehavior(.basedOnSize)
+                .padding(24)
+                .foregroundStyle(ThemeTokens.receiptInk)
+                .background(ThemeTokens.receiptPaper, in: .rect(cornerRadius: 4))
+                .frame(maxWidth: 520)
+                .padding(20)
+                .frame(maxWidth: .infinity, minHeight: viewport.size.height)
             }
         }
-        .onAppear {
-            appeared = true
-        }
+        .background(ThemeTokens.canvasBackground.ignoresSafeArea())
+        .onAppear { appeared = true }
     }
 }

@@ -39,10 +39,10 @@ struct TactileOutlineButtonStyle: ButtonStyle {
             .padding(.horizontal, 18)
             .background(
                 RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                    .fill(accentColor.opacity(0.10))
+                    .fill(accentColor.opacity(0.04))
                     .overlay(
                         RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                            .strokeBorder(accentColor.opacity(0.55), lineWidth: 1.5)
+                            .strokeBorder(accentColor.opacity(0.65), lineWidth: 1)
                     )
             )
             .opacity(configuration.isPressed ? 0.85 : 1.0)

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 「今天有喝・誠實紀錄」彈窗表單，依據是否超出每週安全額度動態切換「理性小酌」與「誠實護盾」視覺預覽。
+/// 一次飲酒紀錄。杯數、情境與備忘在成功儲存前都是草稿。
 struct HonestShieldSheet: View {
     let monsterSpec: MonsterSpec
     let willTriggerShield: Bool
@@ -33,62 +33,45 @@ struct HonestShieldSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    statusBanner
-
+                VStack(alignment: .leading, spacing: 24) {
                     unitsSection
-
+                    rule
                     triggersSection
-
+                    rule
                     noteSection
+                    statusSummary
                 }
-                .padding(20)
+                .padding(22)
+                .frame(maxWidth: 550)
+                .frame(maxWidth: .infinity)
             }
-            .background(ThemeTokens.canvasBackground)
-            .navigationTitle(showsShield ? "開啟誠實護盾" : "額度內小酌紀錄")
+            .scrollDismissesKeyboard(.interactively)
+            .foregroundStyle(ThemeTokens.receiptInk)
+            .background(ThemeTokens.receiptPaper)
+            .navigationTitle("飲酒紀錄")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(ThemeTokens.receiptPaper, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }
-                        .foregroundStyle(ThemeTokens.inkSecondary)
+                        .foregroundStyle(ThemeTokens.receiptInk)
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 8) {
-                    Button {
-                        do {
-                            let tags = RelapseTriggerTag.allCases.filter(selectedTriggers.contains)
-                            if case .requiresTrigger = try onSubmit(units, tags, note.trimmingCharacters(in: .whitespacesAndNewlines)) {
-                                submitNeedsTrigger = true
-                            } else {
-                                dismiss()
-                            }
-                        } catch {
-                            saveFailed = true
-                        }
-                    } label: {
-                        Label(
-                            showsShield ? "確認紀錄・啟動誠實護盾 (+\(predictedHeal) HP)" : "確認紀錄・保留連勝 (+\(predictedHeal) HP)",
-                            systemImage: showsShield ? "shield.lefthalf.filled" : "checkmark.seal.fill"
-                        )
-                    }
-                    .buttonStyle(
-                        TactilePrimaryButtonStyle(
-                            fillColor: showsShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration,
-                            foregroundColor: ThemeTokens.canvasBackground
-                        )
-                    )
+                Button("記下這次飲酒", action: submit)
+                    .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.printGreen,
+                                                         foregroundColor: ThemeTokens.receiptPaper))
+                    .accessibilityIdentifier("drink.submit")
                     .disabled(!canSubmit)
-                    .opacity(canSubmit ? 1 : 0.45)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 16)
-                .background(ThemeTokens.canvasBackground.opacity(0.96))
+                    .opacity(canSubmit ? 1 : 0.46)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: 550)
+                    .frame(maxWidth: .infinity)
+                    .background(ThemeTokens.receiptPaper)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .alert("紀錄未儲存", isPresented: $saveFailed) {
             Button("好", role: .cancel) {}
         } message: {
@@ -96,164 +79,115 @@ struct HonestShieldSheet: View {
         }
     }
 
-    private var statusBanner: some View {
-        let bannerColor = showsShield ? ThemeTokens.amberShield : ThemeTokens.skyModeration
-        return HStack(alignment: .top, spacing: 12) {
-            Image(systemName: showsShield ? "shield.lefthalf.filled" : "checkmark.shield.fill")
-                .font(.title2)
-                .foregroundStyle(bannerColor)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(showsShield ? "誠實紀錄・啟動護盾" : "符合減量計畫（本週已用 \(weeklyUsed)/\(weeklyLimit) 次）")
-                    .font(ThemeTokens.roundedTitleFont(.headline, weight: .bold))
-                    .foregroundStyle(ThemeTokens.inkPrimary)
-
-                Text(
-                    showsShield
-                    ? "\(monsterSpec.name)只會微幅回復 \(predictedHeal) HP（單次上限 20%），關卡與累計省錢全部保留，並獲得 +25 反省經驗。"
-                    : "這場小酌在你的減量計畫內，每日攻擊連勝將繼續保留，怪獸僅輕微回復 \(predictedHeal) HP。"
-                )
-                .font(.subheadline)
-                .foregroundStyle(ThemeTokens.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+    private func submit() {
+        do {
+            let tags = RelapseTriggerTag.allCases.filter(selectedTriggers.contains)
+            let status = try onSubmit(units, tags, note.trimmingCharacters(in: .whitespacesAndNewlines))
+            if case .requiresTrigger = status {
+                submitNeedsTrigger = true
+            } else {
+                dismiss()
             }
+        } catch {
+            saveFailed = true
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                .fill(bannerColor.opacity(0.12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: ThemeTokens.cardRadius, style: .continuous)
-                        .strokeBorder(bannerColor.opacity(0.4), lineWidth: 1)
-                )
-        )
+    }
+
+    private var rule: some View {
+        Divider().overlay(ThemeTokens.receiptInk.opacity(0.30))
     }
 
     private var unitsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("這次喝了幾標準杯？")
-                .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .semibold))
-                .foregroundStyle(ThemeTokens.inkPrimary)
-
-            HStack {
-                Button {
-                    units -= 1
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.title2)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .foregroundStyle(units > 1 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
+            Text("這次喝了幾杯？")
+                .font(.system(.title, design: .serif, weight: .bold))
+                .accessibilityAddTraits(.isHeader)
+            Stepper(value: $units, in: 1...6) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(units == 6 ? "6+" : "\(units)")
+                        .font(ThemeTokens.roundedTitleFont(.largeTitle)).monospacedDigit()
+                    Text("標準杯")
+                        .font(.subheadline)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("減少一杯")
-                .disabled(units <= 1)
-
-                Spacer()
-
-                VStack(spacing: 2) {
-                    Text("\(units) \(units == 6 ? "+" : "")杯")
-                        .font(ThemeTokens.roundedTitleFont(.title))
-                        .monospacedDigit()
-                        .foregroundStyle(ThemeTokens.inkPrimary)
-                }
-
-                Spacer()
-
-                Button {
-                    units += 1
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .foregroundStyle(units < 6 ? ThemeTokens.inkPrimary : ThemeTokens.inkSecondary.opacity(0.4))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("增加一杯")
-                .disabled(units >= 6)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                    .fill(ThemeTokens.cardSurface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ThemeTokens.pillRadius, style: .continuous)
-                            .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                    )
-            )
+            .accessibilityLabel("飲酒杯數")
+            .accessibilityValue(units == 6 ? "六標準杯以上" : "\(units) 標準杯")
+
+            DisclosureGroup("一標準杯有多少？") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("這裡以 10 公克純酒精為一標準杯。依瓶身標示的濃度，可用下列份量估算。")
+                    LabeledContent("啤酒（5%）", value: "約 250 mL")
+                    LabeledContent("葡萄酒（12%）", value: "約 100 mL")
+                    LabeledContent("威士忌（40%）", value: "約 30 mL")
+                    if let source = URL(string: "https://www.mohw.gov.tw/dl-58612-ae275510-f3ab-4327-9b2d-b6976d0f20ef.html") {
+                        Link("衛福部・常見酒類之酒精含量表", destination: source)
+                            .underline()
+                    }
+                }
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+            }
+            .font(.subheadline)
+            .tint(ThemeTokens.printGreen)
         }
     }
 
     private var triggersSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(showsShield ? "是什麼情境想喝？（至少選 1 項）" : "情境標籤（選填）")
-                    .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .semibold))
-                    .foregroundStyle(ThemeTokens.inkPrimary)
-                Spacer()
-                if isModerationMode && !showsShield {
-                    Text("額度內不計入破戒")
-                        .font(.caption)
-                        .foregroundStyle(ThemeTokens.skyModeration)
-                }
-            }
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("當時是什麼情境？")
+                .font(.headline)
+            Text(showsShield ? "誠實護盾需要至少一項，可複選。" : "可以複選，也可以略過。")
+                .font(.subheadline)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading),
+                                     count: dynamicTypeSize >= .xxxLarge ? 1 : 2),
+                      alignment: .leading, spacing: 0) {
                 ForEach(RelapseTriggerTag.allCases) { tag in
-                    let isSelected = selectedTriggers.contains(tag)
+                    let selected = selectedTriggers.contains(tag)
                     Button {
-                        if isSelected {
-                            selectedTriggers.remove(tag)
-                        } else {
-                            selectedTriggers.insert(tag)
-                        }
+                        if selected { selectedTriggers.remove(tag) } else { selectedTriggers.insert(tag) }
                     } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: isSelected ? "checkmark.circle.fill" : tag.symbolName)
-                                .font(.subheadline)
-                            Text(tag.rawValue)
-                                .font(.subheadline.weight(.medium))
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer(minLength: 0)
-                        }
-                        .foregroundStyle(isSelected ? ThemeTokens.amberShield : ThemeTokens.inkPrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(isSelected ? ThemeTokens.amberShield.opacity(0.14) : ThemeTokens.cardSurface)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .strokeBorder(isSelected ? ThemeTokens.amberShield : ThemeTokens.cardStroke, lineWidth: 1.2)
-                                )
-                        )
+                        Label(tag.rawValue, systemImage: selected ? "checkmark.square.fill" : "square")
+                            .font(.body)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    .foregroundStyle(selected ? ThemeTokens.printGreen : ThemeTokens.receiptInk)
+                    .accessibilityLabel(tag.rawValue)
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
         }
     }
 
     private var noteSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("給自己的備忘（選填）")
-                .font(ThemeTokens.roundedTitleFont(.subheadline, weight: .semibold))
-                .foregroundStyle(ThemeTokens.inkPrimary)
-
-            TextField("例如：聚會前先點氣泡水⋯⋯", text: $note)
-                .font(.subheadline)
-                .foregroundStyle(ThemeTokens.inkPrimary)
-                .padding(14)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(ThemeTokens.cardSurface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .strokeBorder(ThemeTokens.cardStroke, lineWidth: 1)
-                        )
-                )
+        VStack(alignment: .leading, spacing: 12) {
+            Text("留一句給自己（選填）")
+                .font(.headline)
+            TextField("例如：第二輪有人幫我把酒添滿了。", text: $note, axis: .vertical)
+                .lineLimit(1...4)
+                .textFieldStyle(.plain)
+                .frame(minHeight: 44, alignment: .leading)
+                .accessibilityLabel("給自己的備忘")
+            rule
         }
+    }
+
+    private var statusSummary: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Label(showsShield ? "這次會啟動誠實護盾" : "這次在每週減量目標內",
+                  systemImage: showsShield ? "shield.lefthalf.filled" : "checkmark")
+                .font(.headline)
+            if showsShield {
+                Text("關卡與累計成果保留，連勝重新起算。\(monsterSpec.name)回復 \(predictedHeal) HP。")
+            } else if isModerationMode {
+                Text("本週已記 \(weeklyUsed) 次，上限為 \(weeklyLimit) 次。這次保留連勝，怪獸回復 \(predictedHeal) HP。")
+            }
+        }
+        .font(.subheadline)
+        .monospacedDigit()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }

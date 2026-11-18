@@ -2,7 +2,7 @@ import SpriteKit
 import SwiftUI
 import CoreGraphics
 
-/// 以 SpriteKit 打造的 2D RPG 戰鬥舞台場景（免外部手繪圖檔即可呈現多部件動態怪獸、魔法陣、粒子特效與刀光打擊感；同時支援放入手繪圖無縫替換）。
+/// 桌邊的戒酒戰鬥場景：酒瓶、水杯與杯墊為固定版畫，只有怪獸和操作回饋會動。
 @MainActor
 final class BattleStageScene: SKScene {
     // MARK: - State
@@ -12,12 +12,10 @@ final class BattleStageScene: SKScene {
 
     // MARK: - Scene Graph Nodes
     private let worldNode = SKNode()
-    private let bgStarsLayer = SKNode()
-    private let magicCircleNode = SKNode()
+    private let tabletop = SKNode()
     private let monsterRootNode = SKNode()
     private let vfxOverlayNode = SKNode()
 
-    private var ambientEmitter: SKEmitterNode?
     private var needsStaticFrame = true
     private var isSceneBuilt = false
 
@@ -60,14 +58,11 @@ final class BattleStageScene: SKScene {
             worldNode.removeAllActions()
             worldNode.position = .zero
             vfxOverlayNode.removeAllChildren()
-            buildStarfieldBackdrop()
         }
         if levelChanged || motionChanged {
-            rebuildMagicCircle()
-            rebuildAmbientParticles()
             rebuildMonsterRig(animateEntrance: levelChanged)
         } else if prevCritical != nowCritical {
-            updateMonsterCriticalAura(isCritical: nowCritical)
+            updateWoundedAppearance(isCritical: nowCritical)
         }
     }
 
@@ -86,7 +81,7 @@ final class BattleStageScene: SKScene {
         spawnSwordSlashArc()
 
         // 2. 粒子爆發火花
-        spawnHitSparks(color: skColor(hex: 0x2DD4BF), count: 32)
+        spawnHitSparks(color: SKColor(ThemeTokens.printGreen), count: 32)
 
         // 3. 怪獸受擊後退、閃白與鏡頭震動
         runCameraShake(intensity: 9.0, duration: 0.24)
@@ -111,7 +106,7 @@ final class BattleStageScene: SKScene {
 
         // 受擊衝擊光圈
         let shockRing = SKShapeNode(circleOfRadius: 28)
-        shockRing.strokeColor = skColor(hex: 0x2DD4BF)
+        shockRing.strokeColor = SKColor(ThemeTokens.printGreen)
         shockRing.lineWidth = 4.0
         shockRing.fillColor = .clear
         shockRing.position = CGPoint(x: 0, y: 12)
@@ -128,7 +123,7 @@ final class BattleStageScene: SKScene {
         let labelText = damage >= 130 ? "-\(damage) 暴擊!" : "-\(damage) HP"
         spawnFloatingCombatText(
             labelText,
-            color: skColor(hex: 0x2DD4BF),
+            color: SKColor(ThemeTokens.printGreen),
             fontSize: damage >= 130 ? 24 : 21,
             startOffset: CGPoint(x: 0, y: 58)
         )
@@ -138,15 +133,14 @@ final class BattleStageScene: SKScene {
         guard !reduceMotion else { return }
         buildSceneIfNeeded()
 
-        let shieldHex: UInt32 = isWithinBudget ? 0x38BDF8 : 0xF59E0B
-        let tint = skColor(hex: shieldHex)
+        let tint = SKColor(ThemeTokens.printGreen)
 
         // 1. 六角護盾能量穹頂
         let dome = SKShapeNode(path: Self.makeHexagonPath(radius: 92))
         dome.strokeColor = tint
         dome.lineWidth = 3.5
         dome.fillColor = tint.withAlphaComponent(0.16)
-        dome.glowWidth = 6.0
+
         dome.position = CGPoint(x: 0, y: 12)
         dome.setScale(0.75)
         dome.alpha = 0.0
@@ -177,7 +171,7 @@ final class BattleStageScene: SKScene {
         spawnHitSparks(color: tint, count: 22)
 
         // 3. 飄浮護盾字卡
-        let prefix = isWithinBudget ? "理性小酌" : "誠實護盾"
+        let prefix = isWithinBudget ? "已記錄" : "誠實護盾"
         spawnFloatingCombatText(
             "\(prefix) +\(healAmount) HP",
             color: tint,
@@ -200,7 +194,7 @@ final class BattleStageScene: SKScene {
 
     func pokeMonsterReaction() {
         guard !reduceMotion else { return }
-        spawnHitSparks(color: skColor(hex: currentSpec.accentHex), count: 12)
+        spawnHitSparks(color: SKColor(ThemeTokens.printGreen), count: 12)
         let bounce = SKAction.sequence([
             .scaleX(to: 1.12, y: 0.88, duration: 0.07),
             .scaleX(to: 0.94, y: 1.08, duration: 0.09),
@@ -216,126 +210,119 @@ final class BattleStageScene: SKScene {
         isSceneBuilt = true
 
         addChild(worldNode)
-        worldNode.addChild(bgStarsLayer)
-        worldNode.addChild(magicCircleNode)
+        worldNode.addChild(tabletop)
         worldNode.addChild(monsterRootNode)
         worldNode.addChild(vfxOverlayNode)
 
-        buildStarfieldBackdrop()
-        rebuildMagicCircle()
-        rebuildAmbientParticles()
+        buildTabletop()
         rebuildMonsterRig(animateEntrance: false)
         layoutNodesForCurrentSize()
     }
 
     private func layoutNodesForCurrentSize() {
-        magicCircleNode.position = CGPoint(x: 0, y: -74)
+        worldNode.setScale(min(size.width / 338, size.height / 215, 1.1))
         monsterRootNode.position = CGPoint(x: 0, y: 8)
     }
 
-    private func buildStarfieldBackdrop() {
-        bgStarsLayer.removeAllChildren()
-        let positions: [CGPoint] = [
-            CGPoint(x: -118, y: 82), CGPoint(x: -86, y: 44),
-            CGPoint(x: 108, y: 76), CGPoint(x: 124, y: 24),
-            CGPoint(x: -126, y: -22), CGPoint(x: 92, y: -38),
-            CGPoint(x: -44, y: 96), CGPoint(x: 52, y: 92)
-        ]
-        for (idx, pos) in positions.enumerated() {
-            let star = SKSpriteNode(texture: Self.sparkDiamondTexture)
-            let dim = CGFloat(idx.isMultiple(of: 2) ? 7 : 5)
-            star.size = CGSize(width: dim, height: dim)
-            star.position = pos
-            star.color = skColor(hex: 0xF6F3EC)
-            star.colorBlendFactor = 1.0
-            star.alpha = 0.25
-            bgStarsLayer.addChild(star)
-
-            if !reduceMotion {
-                let twinkle = SKAction.sequence([
-                    .fadeAlpha(to: 0.75, duration: Double.random(in: 1.0...1.8)),
-                    .fadeAlpha(to: 0.18, duration: Double.random(in: 1.0...1.8))
-                ])
-                star.run(.repeatForever(twinkle))
-            }
+    private func buildTabletop() {
+        let ink = SKColor(ThemeTokens.receiptInk)
+        let paper = SKColor(ThemeTokens.receiptPaper)
+        let wash = SKColor(ThemeTokens.printGreen)
+        // These still-life outlines use a fixed print coordinate system. Only layout scales the group.
+        func line(_ points: [CGPoint], width: CGFloat = 1.4, opacity: CGFloat = 1) {
+            guard let first = points.first else { return }
+            let path = CGMutablePath()
+            path.move(to: first)
+            for point in points.dropFirst() { path.addLine(to: point) }
+            let stroke = SKShapeNode(path: path)
+            stroke.strokeColor = ink.withAlphaComponent(opacity)
+            stroke.lineWidth = width
+            stroke.lineCap = .round
+            tabletop.addChild(stroke)
         }
-    }
 
-    private func rebuildMagicCircle() {
-        magicCircleNode.removeAllChildren()
-        let accent = skColor(hex: currentSpec.accentHex)
+        line([.init(x: -160, y: -45), .init(x: 160, y: -45)], width: 1, opacity: 0.28)
+        line([.init(x: -134, y: -76), .init(x: -77, y: -76)], width: 1, opacity: 0.18)
+        line([.init(x: 65, y: -84), .init(x: 143, y: -84)], width: 1, opacity: 0.18)
 
-        // 底層暗影橢圓
-        let shadow = SKShapeNode(ellipseOf: CGSize(width: 196, height: 48))
-        shadow.fillColor = SKColor(red: 0.02, green: 0.04, blue: 0.08, alpha: 0.70)
-        shadow.strokeColor = .clear
-        magicCircleNode.addChild(shadow)
+        let coaster = SKShapeNode(ellipseOf: .init(width: 158, height: 36))
+        coaster.position = .init(x: 0, y: -58)
+        coaster.fillColor = wash.withAlphaComponent(0.20)
+        coaster.strokeColor = ink
+        coaster.lineWidth = 1.8
+        tabletop.addChild(coaster)
+        let inner = SKShapeNode(ellipseOf: .init(width: 143, height: 27))
+        inner.strokeColor = ink.withAlphaComponent(0.5)
+        inner.lineWidth = 1
+        coaster.addChild(inner)
 
-        // 外層透視魔法陣環
-        let outerRing = SKShapeNode(ellipseOf: CGSize(width: 184, height: 42))
-        outerRing.fillColor = accent.withAlphaComponent(0.10)
-        outerRing.strokeColor = accent.withAlphaComponent(0.65)
-        outerRing.lineWidth = 2.0
-        outerRing.glowWidth = 4.0
-        magicCircleNode.addChild(outerRing)
+        // An empty, capped beer bottle stands behind the coaster.
+        let bottle = CGMutablePath()
+        bottle.move(to: .init(x: -135, y: 66))
+        bottle.addLine(to: .init(x: -119, y: 66))
+        bottle.addLine(to: .init(x: -117, y: 37))
+        bottle.addQuadCurve(to: .init(x: -106, y: 13), control: .init(x: -107, y: 25))
+        bottle.addLine(to: .init(x: -103, y: -44))
+        bottle.addQuadCurve(to: .init(x: -109, y: -51), control: .init(x: -103, y: -51))
+        bottle.addLine(to: .init(x: -142, y: -53))
+        bottle.addQuadCurve(to: .init(x: -149, y: -45), control: .init(x: -150, y: -52))
+        bottle.addLine(to: .init(x: -151, y: 14))
+        bottle.addQuadCurve(to: .init(x: -139, y: 37), control: .init(x: -151, y: 23))
+        bottle.closeSubpath()
+        let glass = SKShapeNode(path: bottle)
+        glass.fillColor = wash
+        glass.strokeColor = ink
+        glass.lineWidth = 2
+        tabletop.addChild(glass)
+        let cap = SKShapeNode(rectOf: .init(width: 22, height: 7), cornerRadius: 1)
+        cap.position = .init(x: -127, y: 67)
+        cap.fillColor = ink
+        cap.strokeColor = ink
+        tabletop.addChild(cap)
+        let wrapper = SKShapeNode(rectOf: .init(width: 41, height: 32), cornerRadius: 1)
+        wrapper.fillColor = paper
+        wrapper.strokeColor = ink
+        wrapper.zRotation = 0.035
+        wrapper.position = .init(x: -127, y: -16)
+        tabletop.addChild(wrapper)
+        let print = SKLabelNode(text: "啤酒")
+        print.fontName = "PingFangTC-Medium"
+        print.fontColor = ink
+        print.fontSize = 13
+        print.verticalAlignmentMode = .center
+        wrapper.addChild(print)
 
-        // 內層旋轉符文幾何（壓扁形成透視感）
-        let runeHolder = SKNode()
-        runeHolder.yScale = 0.24
-        magicCircleNode.addChild(runeHolder)
-
-        let runeHex = SKShapeNode(path: Self.makeHexagonPath(radius: 68))
-        runeHex.strokeColor = accent.withAlphaComponent(0.55)
-        runeHex.lineWidth = 2.0
-        runeHex.fillColor = .clear
-        runeHolder.addChild(runeHex)
-
-        let runeSquare = SKShapeNode(rectOf: CGSize(width: 88, height: 88), cornerRadius: 8)
-        runeSquare.strokeColor = accent.withAlphaComponent(0.35)
-        runeSquare.lineWidth = 1.5
-        runeSquare.fillColor = .clear
-        runeSquare.zRotation = .pi / 4
-        runeHolder.addChild(runeSquare)
-
-        if !reduceMotion {
-            runeHex.run(.repeatForever(.rotate(byAngle: .pi * 2, duration: 14.0)))
-            runeSquare.run(.repeatForever(.rotate(byAngle: -.pi * 2, duration: 18.0)))
-            let pulse = SKAction.sequence([
-                .scale(to: 1.04, duration: 1.4),
-                .scale(to: 0.96, duration: 1.4)
-            ])
-            outerRing.run(.repeatForever(pulse))
+        // A fluted water tumbler in the foreground.
+        let tumbler = CGMutablePath()
+        tumbler.move(to: .init(x: 94, y: -1))
+        tumbler.addQuadCurve(to: .init(x: 143, y: -1), control: .init(x: 116, y: 6))
+        tumbler.addLine(to: .init(x: 137, y: -56))
+        tumbler.addQuadCurve(to: .init(x: 102, y: -56), control: .init(x: 119, y: -64))
+        tumbler.closeSubpath()
+        let cup = SKShapeNode(path: tumbler)
+        cup.strokeColor = ink
+        cup.fillColor = paper
+        cup.lineWidth = 2
+        tabletop.addChild(cup)
+        let water = CGMutablePath()
+        water.move(to: .init(x: 98, y: -24))
+        water.addQuadCurve(to: .init(x: 139, y: -23), control: .init(x: 118, y: -17))
+        water.addLine(to: .init(x: 135, y: -54))
+        water.addQuadCurve(to: .init(x: 104, y: -54), control: .init(x: 119, y: -59))
+        water.closeSubpath()
+        let waterFill = SKShapeNode(path: water)
+        waterFill.fillColor = wash.withAlphaComponent(0.29)
+        waterFill.strokeColor = .clear
+        tabletop.addChild(waterFill)
+        for x in [104, 111, 128, 135] {
+            line([.init(x: x, y: -13), .init(x: (x - 119) * 4 / 5 + 119, y: -50)],
+                 width: 1, opacity: 0.52)
         }
+        line([.init(x: 95, y: -2), .init(x: 117, y: -5), .init(x: 141, y: -2)],
+             width: 1.4, opacity: 0.75)
     }
 
-    private func rebuildAmbientParticles() {
-        ambientEmitter?.removeFromParent()
-        ambientEmitter = nil
-        guard !reduceMotion else { return }
-        let emitter = SKEmitterNode()
-        emitter.particleTexture = Self.softCircleTexture
-        emitter.particleBirthRate = 9
-        emitter.particleLifetime = 2.8
-        emitter.particleLifetimeRange = 0.8
-        emitter.particlePositionRange = CGVector(dx: 160, dy: 20)
-        emitter.position = CGPoint(x: 0, y: -70)
-        emitter.emissionAngle = .pi / 2
-        emitter.emissionAngleRange = .pi / 5
-        emitter.particleSpeed = 24
-        emitter.particleSpeedRange = 12
-        emitter.particleAlpha = 0.55
-        emitter.particleAlphaSpeed = -0.18
-        emitter.particleScale = 0.22
-        emitter.particleScaleRange = 0.12
-        emitter.particleScaleSpeed = -0.04
-        emitter.particleColor = skColor(hex: currentSpec.accentHex)
-        emitter.particleColorBlendFactor = 1.0
-        emitter.particleBlendMode = .add
-        worldNode.insertChild(emitter, at: 2)
-        ambientEmitter = emitter
-    }
-
-    // MARK: - Multi-Part Procedural Boss Rigs (with Optional Hand-Drawn Override)
+    // MARK: - Monster rigs
 
     private func rebuildMonsterRig(animateEntrance: Bool) {
         monsterRootNode.removeAllActions()
@@ -343,20 +330,8 @@ final class BattleStageScene: SKScene {
         monsterRootNode.position = CGPoint(x: 0, y: 8)
         monsterRootNode.zRotation = 0
 
-        let accent = skColor(hex: currentSpec.accentHex)
+        let accent = currentSpec.level == 1 ? SKColor(ThemeTokens.amberShield) : SKColor(ThemeTokens.printGreen)
 
-        // 背景柔和呼吸光球
-        let backGlow = SKSpriteNode(texture: Self.softCircleTexture)
-        backGlow.size = CGSize(width: 190, height: 190)
-        backGlow.color = accent
-        backGlow.colorBlendFactor = 1.0
-        backGlow.alpha = 0.28
-        backGlow.blendMode = .add
-        backGlow.name = "backGlow"
-        monsterRootNode.addChild(backGlow)
-
-        // 檢查是否已有組員放入的手繪圖片（例如 Assets.xcassets 中的 "monster_lv1"）
-        // 若尚無手繪圖，則使用精緻的多部件程序化 SpriteKit 骨架節點！
         let rigContainer = SKNode()
         rigContainer.name = "rigContainer"
         monsterRootNode.addChild(rigContainer)
@@ -374,8 +349,8 @@ final class BattleStageScene: SKScene {
 
         if !reduceMotion {
             let floatAction = SKAction.sequence([
-                .moveBy(x: 0, y: 9, duration: 1.35),
-                .moveBy(x: 0, y: -9, duration: 1.35)
+                .moveBy(x: 0, y: 3, duration: 1.35),
+                .moveBy(x: 0, y: -3, duration: 1.35)
             ])
             rigContainer.run(.repeatForever(floatAction), withKey: "idleFloat")
         }
@@ -395,7 +370,7 @@ final class BattleStageScene: SKScene {
             monsterRootNode.alpha = 1.0
         }
 
-        updateMonsterCriticalAura(isCritical: currentHPRatio <= 0.30 && currentHPRatio > 0)
+        updateWoundedAppearance(isCritical: currentHPRatio <= 0.30 && currentHPRatio > 0)
     }
 
     /// Lv.1 微醺史萊姆：雙層半透明果凍軀幹＋內部發光氣泡粒子＋Q 彈呼吸擠壓＋眨眼動畫
@@ -410,7 +385,7 @@ final class BattleStageScene: SKScene {
         outerBody.fillColor = accent.withAlphaComponent(0.88)
         outerBody.strokeColor = SKColor.white.withAlphaComponent(0.45)
         outerBody.lineWidth = 2.5
-        outerBody.glowWidth = 2.0
+
         container.addChild(outerBody)
 
         // 史萊姆內部微光果凍核
@@ -454,7 +429,7 @@ final class BattleStageScene: SKScene {
         }
 
         // 表情五官（支援眨眼）
-        let faceNode = makeExpressiveFace(eyeSpacing: 42, angry: false, cheekColor: skColor(hex: 0xF43F5E))
+        let faceNode = makeExpressiveFace(eyeSpacing: 42, angry: false, cheekColor: SKColor(ThemeTokens.coralAlert))
         faceNode.position = CGPoint(x: 0, y: -2)
         outerBody.addChild(faceNode)
 
@@ -486,22 +461,22 @@ final class BattleStageScene: SKScene {
 
         // 重裝軀幹
         let torso = SKShapeNode(rectOf: CGSize(width: 126, height: 120), cornerRadius: 38)
-        torso.fillColor = skColor(hex: 0x1E293B)
+        torso.fillColor = SKColor(ThemeTokens.receiptInk)
         torso.strokeColor = accent
         torso.lineWidth = 3.0
-        torso.glowWidth = 2.0
+
         container.addChild(torso)
 
         // 鎧甲胸口護紋
         let belt = SKShapeNode(rectOf: CGSize(width: 112, height: 18), cornerRadius: 6)
-        belt.fillColor = skColor(hex: 0x0F172A)
-        belt.strokeColor = skColor(hex: 0xF59E0B)
+        belt.fillColor = SKColor(ThemeTokens.canvasBackground)
+        belt.strokeColor = SKColor(ThemeTokens.amberShield)
         belt.lineWidth = 1.5
         belt.position = CGPoint(x: 0, y: -26)
         torso.addChild(belt)
 
         let buckle = SKShapeNode(rectOf: CGSize(width: 22, height: 22), cornerRadius: 5)
-        buckle.fillColor = skColor(hex: 0xF59E0B)
+        buckle.fillColor = SKColor(ThemeTokens.amberShield)
         buckle.strokeColor = .clear
         belt.addChild(buckle)
 
@@ -516,7 +491,7 @@ final class BattleStageScene: SKScene {
         container.addChild(mugHand)
 
         let mugBody = SKShapeNode(rectOf: CGSize(width: 30, height: 38), cornerRadius: 6)
-        mugBody.fillColor = skColor(hex: 0xF59E0B)
+        mugBody.fillColor = SKColor(ThemeTokens.amberShield)
         mugBody.strokeColor = SKColor.white.withAlphaComponent(0.6)
         mugBody.lineWidth = 2.0
         mugHand.addChild(mugBody)
@@ -533,7 +508,7 @@ final class BattleStageScene: SKScene {
         container.addChild(shieldHand)
 
         let buckler = SKShapeNode(circleOfRadius: 24)
-        buckler.fillColor = skColor(hex: 0x0F172A)
+        buckler.fillColor = SKColor(ThemeTokens.canvasBackground)
         buckler.strokeColor = accent
         buckler.lineWidth = 3.0
         shieldHand.addChild(buckler)
@@ -586,16 +561,16 @@ final class BattleStageScene: SKScene {
 
         // 六角黑曜龍軀
         let bodyHex = SKShapeNode(path: Self.makeHexagonPath(radius: 64))
-        bodyHex.fillColor = skColor(hex: 0x1E293B)
+        bodyHex.fillColor = SKColor(ThemeTokens.receiptInk)
         bodyHex.strokeColor = accent
         bodyHex.lineWidth = 3.0
-        bodyHex.glowWidth = 3.5
+
         container.addChild(bodyHex)
 
         // 胸口龍焰核心
         let flameCore = SKShapeNode(path: Self.makeHexagonPath(radius: 24))
         flameCore.fillColor = accent.withAlphaComponent(0.85)
-        flameCore.strokeColor = skColor(hex: 0xF59E0B)
+        flameCore.strokeColor = SKColor(ThemeTokens.amberShield)
         flameCore.lineWidth = 2.0
         flameCore.position = CGPoint(x: 0, y: -18)
         bodyHex.addChild(flameCore)
@@ -613,10 +588,10 @@ final class BattleStageScene: SKScene {
         for i in 0..<3 {
             let angle = Double(i) * (.pi * 2.0 / 3.0)
             let crystal = SKShapeNode(rectOf: CGSize(width: 18, height: 18), cornerRadius: 4)
-            crystal.fillColor = skColor(hex: 0xF59E0B)
+            crystal.fillColor = SKColor(ThemeTokens.amberShield)
             crystal.strokeColor = .white
             crystal.lineWidth = 1.5
-            crystal.glowWidth = 4.0
+
             crystal.zRotation = .pi / 4
             crystal.position = CGPoint(x: cos(angle) * 86, y: sin(angle) * 86)
             orbitRing.addChild(crystal)
@@ -627,10 +602,10 @@ final class BattleStageScene: SKScene {
 
         // 魔王菱形主裝甲
         let armor = SKShapeNode(rectOf: CGSize(width: 112, height: 112), cornerRadius: 24)
-        armor.fillColor = skColor(hex: 0x162032)
+        armor.fillColor = SKColor(ThemeTokens.receiptInk)
         armor.strokeColor = accent
         armor.lineWidth = 3.5
-        armor.glowWidth = 5.0
+
         armor.zRotation = .pi / 4
         container.addChild(armor)
 
@@ -646,10 +621,10 @@ final class BattleStageScene: SKScene {
         crownPath.closeSubpath()
 
         let crown = SKShapeNode(path: crownPath)
-        crown.fillColor = skColor(hex: 0xF59E0B)
+        crown.fillColor = SKColor(ThemeTokens.amberShield)
         crown.strokeColor = .white
         crown.lineWidth = 1.5
-        crown.glowWidth = 3.0
+
         crown.position = CGPoint(x: 0, y: 68)
         container.addChild(crown)
 
@@ -661,14 +636,14 @@ final class BattleStageScene: SKScene {
     private func makeExpressiveFace(eyeSpacing: CGFloat, angry: Bool, cheekColor: SKColor?) -> SKNode {
         let face = SKNode()
         let leftEye = SKShapeNode(rectOf: CGSize(width: 14, height: angry ? 9 : 16), cornerRadius: 5)
-        leftEye.fillColor = skColor(hex: 0xF6F3EC)
+        leftEye.fillColor = SKColor(ThemeTokens.receiptPaper)
         leftEye.strokeColor = .clear
         leftEye.position = CGPoint(x: -eyeSpacing / 2, y: 8)
         leftEye.zRotation = angry ? -0.22 : 0
         face.addChild(leftEye)
 
         let rightEye = SKShapeNode(rectOf: CGSize(width: 14, height: angry ? 9 : 16), cornerRadius: 5)
-        rightEye.fillColor = skColor(hex: 0xF6F3EC)
+        rightEye.fillColor = SKColor(ThemeTokens.receiptPaper)
         rightEye.strokeColor = .clear
         rightEye.position = CGPoint(x: eyeSpacing / 2, y: 8)
         rightEye.zRotation = angry ? 0.22 : 0
@@ -698,7 +673,7 @@ final class BattleStageScene: SKScene {
             mouthPath.addQuadCurve(to: CGPoint(x: 12, y: -10), control: CGPoint(x: 6, y: -4))
         }
         let mouth = SKShapeNode(path: mouthPath)
-        mouth.strokeColor = skColor(hex: 0xF6F3EC).withAlphaComponent(0.85)
+        mouth.strokeColor = SKColor(ThemeTokens.receiptPaper).withAlphaComponent(0.85)
         mouth.lineWidth = 2.5
         mouth.lineCap = .round
         mouth.fillColor = .clear
@@ -717,20 +692,10 @@ final class BattleStageScene: SKScene {
         return face
     }
 
-    private func updateMonsterCriticalAura(isCritical: Bool) {
-        guard let glow = monsterRootNode.childNode(withName: "backGlow") as? SKSpriteNode else { return }
-        glow.removeAction(forKey: "criticalPulse")
-        if isCritical && !reduceMotion {
-            glow.color = skColor(hex: 0xF43F5E)
-            let fastPulse = SKAction.sequence([
-                .fadeAlpha(to: 0.48, duration: 0.35),
-                .fadeAlpha(to: 0.15, duration: 0.35)
-            ])
-            glow.run(.repeatForever(fastPulse), withKey: "criticalPulse")
-        } else {
-            glow.color = skColor(hex: currentSpec.accentHex)
-            glow.alpha = 0.28
-        }
+    private func updateWoundedAppearance(isCritical: Bool) {
+        let rig = monsterRootNode.childNode(withName: "rigContainer")
+        rig?.zRotation = isCritical ? -0.09 : 0
+        rig?.alpha = isCritical ? 0.78 : 1
     }
 
     // MARK: - Combat VFX Helpers
@@ -748,9 +713,9 @@ final class BattleStageScene: SKScene {
         )
         let slash = SKShapeNode(path: slashPath)
         slash.fillColor = .white
-        slash.strokeColor = skColor(hex: 0x2DD4BF)
+        slash.strokeColor = SKColor(ThemeTokens.printGreen)
         slash.lineWidth = 3.0
-        slash.glowWidth = 8.0
+
         slash.position = CGPoint(x: 0, y: 12)
         slash.setScale(0.55)
         vfxOverlayNode.addChild(slash)
@@ -783,7 +748,7 @@ final class BattleStageScene: SKScene {
         burst.particleScaleSpeed = -0.45
         burst.particleColor = color
         burst.particleColorBlendFactor = 1.0
-        burst.particleBlendMode = .add
+        burst.particleBlendMode = .alpha
         vfxOverlayNode.addChild(burst)
 
         burst.run(.sequence([
@@ -830,13 +795,6 @@ final class BattleStageScene: SKScene {
     }
 
     // MARK: - Pure CoreGraphics Texture & Path Generators
-
-    private func skColor(hex: UInt32, alpha: CGFloat = 1.0) -> SKColor {
-        let r = CGFloat((hex >> 16) & 0xFF) / 255.0
-        let g = CGFloat((hex >> 8) & 0xFF) / 255.0
-        let b = CGFloat(hex & 0xFF) / 255.0
-        return SKColor(red: r, green: g, blue: b, alpha: alpha)
-    }
 
     private static func makeHexagonPath(radius: CGFloat) -> CGPath {
         let path = CGMutablePath()

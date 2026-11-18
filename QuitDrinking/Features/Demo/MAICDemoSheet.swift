@@ -34,19 +34,21 @@ struct MAICDemoSheet: View {
                         }
                     }
                 } header: {
-                    Text("MAIC 簡報錄影快速預設")
+                    Text("示範用打卡紀錄")
                 } footer: {
                     Text("套用預設會以範例進度與紀錄取代目前的戰績。")
                 }
 
-                Section("時間軸與錄影控制") {
-                    Toggle("Demo 快速演練模式（連續打卡）", isOn: $progress.demoRapidMode)
+                .listRowBackground(ThemeTokens.cardSurface)
+
+                Section("演練與錄影") {
+                    Toggle("連續演練（每次打卡推進一天）", isOn: $progress.demoRapidMode)
                         .tint(ThemeTokens.mintVitality)
                         .onChange(of: progress.demoRapidMode) { _, _ in
                             saveSettings()
                         }
 
-                    Toggle("純淨錄影模式（隱藏 Demo 按鈕）", isOn: $progress.pureRecordingMode)
+                    Toggle("錄影時隱藏控制台按鈕", isOn: $progress.pureRecordingMode)
                         .tint(ThemeTokens.amberShield)
                         .onChange(of: progress.pureRecordingMode) { _, _ in
                             saveSettings()
@@ -54,7 +56,7 @@ struct MAICDemoSheet: View {
 
                     if progress.goalMode == .moderationBudget {
                         Stepper(value: $progress.weeklySessionLimit, in: 1...4) {
-                            Text("減量週額度：每週 \(progress.weeklySessionLimit) 次")
+                            Text("每週飲酒目標  \(progress.weeklySessionLimit) 次")
                                 .monospacedDigit()
                         }
                         .onChange(of: progress.weeklySessionLimit) { _, _ in
@@ -63,12 +65,14 @@ struct MAICDemoSheet: View {
                     }
                 }
 
-                Section("簡報開場與重置") {
+                .listRowBackground(ThemeTokens.cardSurface)
+
+                Section("目標與紀錄") {
                     Button {
                         dismiss()
                         onOpenOnboarding()
                     } label: {
-                        Label("開啟 1 頁式 Onboarding 引導頁", systemImage: "sparkles.rectangle.stack")
+                        Label("設定飲酒目標", systemImage: "list.bullet.clipboard")
                             .foregroundStyle(ThemeTokens.skyModeration)
                     }
 
@@ -78,6 +82,7 @@ struct MAICDemoSheet: View {
                         Label("重置為全新玩家", systemImage: "arrow.counterclockwise")
                     }
                 }
+                .listRowBackground(ThemeTokens.cardSurface)
             }
             .scrollContentBackground(.hidden)
             .background(ThemeTokens.canvasBackground)

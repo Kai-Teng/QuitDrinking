@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 「破曉戰記（DawnQuest）」共用設計語意 Token：暗夜酒館到清晨破曉。
+/// 夜間介面與紙本紀錄共用的語意色彩。
 enum ThemeTokens {
     // MARK: - Surfaces & Ink
     static let canvasBackground = Color(hex: 0x0D131F)
@@ -11,6 +11,11 @@ enum ThemeTokens {
     static let inkPrimary = Color(hex: 0xF6F3EC)
     static let inkSecondary = Color(hex: 0x94A3B8)
 
+    // Uncoated paper, dark ink and bottle-green overprint.
+    static let receiptPaper = Color(hex: 0xF0E7D2)
+    static let receiptInk = Color(hex: 0x282923)
+    static let printGreen = Color(hex: 0x2E594D)
+
     // MARK: - Semantic RPG & Health Accents
     static let mintVitality = Color(hex: 0x2DD4BF)
     static let amberShield = Color(hex: 0xF59E0B)
@@ -19,11 +24,15 @@ enum ThemeTokens {
     static let violetBoss = Color(hex: 0xA855F7)
 
     // MARK: - Layout Radii & Spacing
-    static let cardRadius: CGFloat = 22
-    static let pillRadius: CGFloat = 14
+    static let cardRadius: CGFloat = 12
+    static let pillRadius: CGFloat = 8
     static let sectionSpacing: CGFloat = 16
 
     // MARK: - Typography
+    static func printTitleFont(_ style: Font.TextStyle) -> Font {
+        .system(style, design: .serif, weight: .bold)
+    }
+
     static func roundedNumericFont(size: CGFloat, weight: Font.Weight = .bold) -> Font {
         .system(size: size, weight: weight, design: .rounded)
     }

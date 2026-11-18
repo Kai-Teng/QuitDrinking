@@ -10,19 +10,24 @@ struct CampaignDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    Image(decorative: "MapMonster\(stop.id)")
-                        .resizable().scaledToFit()
-                        .saturation(stop.state == .locked ? 0 : 1)
-                        .frame(height: 104)
-                        .frame(maxWidth: .infinity)
-                    Text(stop.spec.name)
-                        .font(ThemeTokens.roundedTitleFont(.title))
+                VStack(alignment: .leading, spacing: 16) {
+                    EncounterIllustration(level: stop.id, isLocked: stop.state == .locked)
+                        .frame(width: 108, height: 108)
+                    Text(stop.spec.situation)
+                        .font(ThemeTokens.printTitleFont(.largeTitle))
+                        .accessibilityAddTraits(.isHeader)
                     Text(stop.spec.subtitle)
+                        .font(.body)
+                    Divider()
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("可以試試").font(.headline)
+                        Text(stop.spec.alternative)
+                    }
+                    Divider()
+                    Text(stop.spec.name).font(ThemeTokens.roundedTitleFont(.title3))
                     Label(stop.earnedTitle ? "已獲得稱號・\(stop.spec.titleReward)" : "擊敗獎勵・\(stop.spec.titleReward)",
                           systemImage: "medal.fill")
-                        .foregroundStyle(stop.earnedTitle ? ThemeTokens.amberShield : ThemeTokens.inkSecondary)
-
+                        .font(.subheadline)
                     switch stop.state {
                     case .locked:
                         Label("擊敗 Lv.\(stop.id - 1) 怪獸後解鎖", systemImage: stop.state.symbol)
@@ -42,21 +47,19 @@ struct CampaignDetailView: View {
                 .frame(maxWidth: 560, alignment: .leading)
                 .frame(maxWidth: .infinity)
             }
-            .foregroundStyle(ThemeTokens.inkPrimary)
-            .background(ThemeTokens.canvasBackground)
-            .navigationTitle("Lv.\(stop.id)・\(stop.state.label)")
+            .foregroundStyle(ThemeTokens.receiptInk)
+            .background(ThemeTokens.receiptPaper)
+            .navigationTitle("第 \(stop.id) 關・\(stop.state.label)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("關閉") { dismiss() }
-                }
+                ToolbarItem(placement: .cancellationAction) { Button("關閉") { dismiss() } }
             }
             .alert("無法儲存再戰進度", isPresented: $saveFailed) {
                 Button("好", role: .cancel) {}
-            } message: {
-                Text("請再試一次。")
-            }
+            } message: { Text("請再試一次。") }
         }
+        .tint(ThemeTokens.printGreen)
+        .preferredColorScheme(.light)
         .presentationDragIndicator(.visible)
     }
 
@@ -64,6 +67,6 @@ struct CampaignDetailView: View {
         Button(title) {
             do { try enterBattle() } catch { saveFailed = true }
         }
-        .buttonStyle(TactilePrimaryButtonStyle())
+        .buttonStyle(TactilePrimaryButtonStyle(fillColor: ThemeTokens.printGreen, foregroundColor: ThemeTokens.receiptPaper))
     }
 }
