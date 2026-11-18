@@ -102,7 +102,7 @@ struct BattleArenaView: View {
     private var topStatusBar: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("DawnQuest")
+                Text("戰場")
                     .font(ThemeTokens.roundedTitleFont(.title3, weight: .bold))
                     .foregroundStyle(ThemeTokens.inkPrimary)
 

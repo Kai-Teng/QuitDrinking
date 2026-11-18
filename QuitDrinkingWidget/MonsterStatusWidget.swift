@@ -148,7 +148,7 @@ struct MonsterStatusWidget: Widget {
             MonsterStatusWidgetView(entry: entry)
                 .containerBackground(ThemeTokens.canvasBackground, for: .widget)
         }
-        .configurationDisplayName("破曉戰記怪獸狀態")
+        .configurationDisplayName("怪獸狀態")
         .description("在主畫面與鎖定畫面追蹤目前怪獸血量與清醒連勝。")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular])
     }
